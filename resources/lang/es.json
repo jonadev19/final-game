@@ -1,0 +1,22 @@
+{
+  "play_cap": "JUGAR",
+  "credits_cap": "CRÉDITOS",
+  "powered_by": "Desarrollado por ",
+  "built_with": "Construido con ",
+  "talk_wizard_1": "¡Hola mi joven caballero!\n¿Qué haces aquí?",
+  "talk_player_1": "¡Hola!\nFui enviado para rescatar a un niño que fue secuestrado por criaturas que viven en estos alrededores.",
+  "talk_wizard_2": "Humm...\nNo quiero desmotivarte, pero eres el quinto caballero enviado para esta tarea. Hasta el momento ninguno ha regresado con vida y sus cuerpos están colgados en las paredes como trofeos.",
+  "talk_player_2": "No te preocupes viejo. ¡Caballero como yo jamás existió!\n¡Voy a exterminar cada criatura de este lugar y rescatar al niño!",
+  "talk_wizard_3": "¡Sí, confianza es lo que no te falta!\n¡Después no digas que no te advertí!\n¡Buena suerte!",
+  "talk_kid_1": "¡Auxilio! ¡Auxilio!",
+  "talk_boss_1": "¡Cállate pequeña criatura apetitosa!\n¡Ha llegado la hora de probar tu suave piel! ja ja ja ja",
+  "talk_player_3": "¡No será esta vez tu repugnante criatura!\n¡Tus días de monstruosidades han terminado!",
+  "talk_boss_2": "¡Mira eso! ¡Otro caballero de ego inflado pensando que puede detenerme! ja ja ja ja\n¡Ven aquí!",
+  "talk_kid_2": "¡Gracias a los dioses!\n¡Lograste derrotar a esta horrible criatura! ¡Muchas gracias!\n¡Ni siquiera sé cómo agradecerte!",
+  "talk_player_4": "¡Fue un honor poder ayudarte! Y no te preocupes por recompensarme, ¡tu padre me prometió una fortuna por rescatarte! :-)",
+  "play_again_cap": "JUGAR DE NUEVO",
+  "congratulations": "¡FELICITACIONES!",
+  "thanks": "Gracias por probar el juego y sentir el poder de Flame y Bonfire en la construcción de juegos 2D.\n¡Tal vez podamos tener una continuación del juego!\n¡Espero que lo hayas disfrutado!",
+  "door_without_key": "¡Creo que necesito una llave para pasar por aquí!"
+}
+
