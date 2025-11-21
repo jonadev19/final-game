@@ -10,10 +10,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+
 // La constante tileSize ahora está en constants/game_constants.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicializar Firebase
+  await Firebase.initializeApp();
 
   // Inicializar AdMob
   await AdService().initialize();

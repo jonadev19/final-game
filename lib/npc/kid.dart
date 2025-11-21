@@ -1,7 +1,8 @@
 import 'package:bonfire/bonfire.dart';
 import 'package:darkness_dungeon/enemies/boss.dart';
-import 'package:darkness_dungeon/screens/levels/level2.dart';
+import 'package:darkness_dungeon/screens/level_selection_screen.dart';
 import 'package:darkness_dungeon/util/custom_sprite_animation_widget.dart';
+import 'package:darkness_dungeon/util/player_inventory.dart';
 import 'package:darkness_dungeon/util/dialogs.dart';
 import 'package:darkness_dungeon/util/functions.dart';
 import 'package:darkness_dungeon/util/localization/strings_location.dart';
@@ -65,9 +66,13 @@ class Kid extends GameDecoration {
         gameRef.camera.moveToPlayerAnimated(onComplete: () {
           Dialogs.showVictoryDialog(
             gameRef.context,
-            () {
+            () async {
+              // Desbloquear Nivel 2
+              await PlayerInventory().unlockNextLevel(1);
+
               Navigator.of(gameRef.context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const Level2()),
+                MaterialPageRoute(
+                    builder: (context) => const LevelSelectionScreen()),
                 (Route<dynamic> route) => false,
               );
             },
