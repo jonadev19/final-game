@@ -88,11 +88,8 @@ class MiniBoss extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
         size: Vector2(GameConstants.tileSize / 3, GameConstants.tileSize / 3),
         position: Vector2(10, 5),
       ),
-      lightingConfig: LightingConfig(
-        radius: GameConstants.tileSize * 0.9,
-        blurBorder: GameConstants.tileSize / 2,
-        color: Colors.deepOrangeAccent.withOpacity(0.4),
-      ),
+      // OPTIMIZADO: Removido lightingConfig para mejor rendimiento
+      // Los proyectiles no necesitan iluminación dinámica
     );
   }
 

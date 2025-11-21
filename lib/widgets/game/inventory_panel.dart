@@ -10,9 +10,10 @@ class InventoryPanel {
   /// Muestra el panel de inventario como un diálogo
   static Future<void> show(
       BuildContext context, PlayerInventory inventory) async {
-    // Recargar inventario para asegurar datos actualizados
-    await inventory.loadInventory();
-
+    // OPTIMIZADO: No recargar inventario cada vez que se abre
+    // El inventario es Singleton y ya está en memoria actualizado
+    // Solo se recarga al inicio de la app en main.dart
+    
     return showDialog(
       context: context,
       barrierDismissible: true,

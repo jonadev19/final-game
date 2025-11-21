@@ -237,10 +237,10 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     
     _removeShieldEffect(); // Remover efecto anterior si existe
     
-    // Crear un círculo brillante alrededor del jugador (simplificado para mejor rendimiento)
+    // OPTIMIZADO: Usar PositionComponent para que siga automáticamente al jugador
+    // Esto evita actualizar la posición manualmente en cada frame
     _shieldEffect = CircleComponent(
       radius: GameConstants.tileSize * 0.75,
-      position: center,
       anchor: Anchor.center,
       paint: Paint()
         ..color = Colors.cyan.withOpacity(0.4)
@@ -249,7 +249,8 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     );
     
     if (_shieldEffect != null) {
-      gameRef.add(_shieldEffect!);
+      // Agregar como hijo del jugador para que se mueva automáticamente
+      add(_shieldEffect!);
       
       // Solo un efecto simple de parpadeo (más eficiente)
       _shieldEffect!.add(
@@ -403,16 +404,13 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     if (isDead) return;
     _verifyStamina();
     
-    // Optimizado: Actualizar posición del escudo solo si está activo
-    if (isInvincible && _shieldEffect != null && _shieldEffect!.isMounted) {
-      _shieldEffect!.position = center;
-      
-      // Optimizado: Calcular tiempo restante solo cada 0.5 segundos
-      if (_invincibilityStartTime != null && checkInterval('updateInvTime', 500, dt)) {
-        final elapsed = DateTime.now().difference(_invincibilityStartTime!).inSeconds;
-        invincibilityTimeLeft = (_invincibilityDuration - elapsed).toDouble();
-        if (invincibilityTimeLeft < 0) invincibilityTimeLeft = 0;
-      }
+    // OPTIMIZADO: El escudo ahora es hijo del jugador, se mueve automáticamente
+    // Solo calculamos el tiempo restante
+    if (isInvincible && _invincibilityStartTime != null && 
+        checkInterval('updateInvTime', 500, dt)) {
+      final elapsed = DateTime.now().difference(_invincibilityStartTime!).inSeconds;
+      invincibilityTimeLeft = (_invincibilityDuration - elapsed).toDouble();
+      if (invincibilityTimeLeft < 0) invincibilityTimeLeft = 0;
     }
     
     // Optimizado: Verificar enemigos con menos frecuencia y menor radio

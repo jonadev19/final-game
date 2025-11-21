@@ -14,7 +14,6 @@ import 'package:darkness_dungeon/util/player_inventory.dart';
 import 'package:darkness_dungeon/services/ad_service.dart';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class Menu extends StatefulWidget {
   @override
@@ -22,7 +21,8 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
-  int currentPosition = 0;
+  // OPTIMIZADO: Usar ValueNotifier para evitar rebuilds completos
+  final ValueNotifier<int> _currentPositionNotifier = ValueNotifier<int>(0);
   late async.Timer _timer;
   late AnimationController _animController;
 
@@ -49,6 +49,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     Sounds.stopBackgroundSound();
     _timer.cancel();
     _animController.dispose();
+    _currentPositionNotifier.dispose();
     super.dispose();
   }
 
@@ -56,9 +57,12 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isLandscape = size.width > size.height;
+    final isSmallScreen = size.height < 600;
 
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             colors: [
@@ -72,98 +76,73 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // TÍTULO (Más pequeño en landscape)
-                  _buildTitle(isLandscape),
-
-                  SizedBox(height: isLandscape ? 10 : 30),
-
-                  // PERSONAJE ANIMADO (Ocultar o reducir en landscape si es muy bajo)
-                  if (sprites.isNotEmpty) _buildAnimatedCharacter(isLandscape),
-
-                  SizedBox(height: isLandscape ? 20 : 50),
-
-                  // BOTÓN JUGAR (Principal)
-                  _buildMainButton(
-                    label: getString('play_cap'),
-                    icon: Icons.play_arrow_rounded,
-                    color: Colors.deepPurple,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LevelSelectionScreen()),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // BOTONES SECUNDARIOS (Fila)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildSecondaryButton(
-                        label: 'Tienda',
-                        icon: Icons.shopping_cart,
-                        color: Colors.amber[800]!,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ShopScreen()),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 15),
-                      _buildSecondaryButton(
-                        label: 'Cloud',
-                        icon: Icons.cloud,
-                        color: Colors.blue[700]!,
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginScreen()),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 15),
-                      _buildSecondaryButton(
-                        label: '+100 💰',
-                        icon: Icons.video_library,
-                        color: Colors.green[700]!,
-                        onPressed: _showRewardAd,
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: isLandscape ? 10 : 40),
-
-                  // BOTÓN DEV (Discreto)
-                  TextButton.icon(
-                    icon:
-                        Icon(Icons.bug_report, color: Colors.white24, size: 16),
-                    label: Text(
-                      'DEV: Nivel 2',
-                      style: TextStyle(
-                        fontFamily: 'Normal',
-                        color: Colors.white24,
-                        fontSize: 12,
-                      ),
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: isSmallScreen ? 15 : 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    // TÍTULO (Responsive)
+                    _buildTitleResponsive(
+                      isLandscape ? 22.0 : (isSmallScreen ? 26.0 : 32.0),
+                      isLandscape ? 36.0 : (isSmallScreen ? 42.0 : 56.0),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const Level2()),
-                      );
-                    },
-                  ),
-                ],
+
+                    SizedBox(height: isLandscape ? 8 : (isSmallScreen ? 15 : 25)),
+
+                    // PERSONAJE ANIMADO (Responsive)
+                    if (sprites.isNotEmpty)
+                      _buildAnimatedCharacterResponsive(
+                        isLandscape ? 60.0 : (isSmallScreen ? 70.0 : 100.0),
+                      ),
+
+                    SizedBox(height: isLandscape ? 15 : (isSmallScreen ? 20 : 30)),
+
+                    // BOTÓN JUGAR (Principal)
+                    _buildMainButton(
+                      label: getString('play_cap'),
+                      icon: Icons.play_arrow_rounded,
+                      color: Colors.deepPurple,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LevelSelectionScreen()),
+                        );
+                      },
+                    ),
+
+                    SizedBox(height: isSmallScreen ? 12 : 18),
+
+                    // BOTONES SECUNDARIOS (Responsive)
+                    _buildSecondaryButtonsRow(isSmallScreen),
+
+                    SizedBox(height: isSmallScreen ? 12 : 20),
+
+                    // BOTÓN DEV (Discreto)
+                    TextButton.icon(
+                      icon: Icon(Icons.bug_report, color: Colors.white24, size: 14),
+                      label: Text(
+                        'DEV: Nivel 2',
+                        style: TextStyle(
+                          fontFamily: 'Normal',
+                          color: Colors.white24,
+                          fontSize: 11,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const Level2()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -172,16 +151,18 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildTitle(bool isLandscape) {
+  // OPTIMIZADO: Título responsive sin ScrollView
+  Widget _buildTitleResponsive(double size1, double size2) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           "FINAL",
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Normal',
-            fontSize: isLandscape ? 24.0 : 32.0,
-            letterSpacing: 8,
+            fontSize: size1,
+            letterSpacing: size1 * 0.25,
             shadows: [
               Shadow(
                 color: Colors.deepPurpleAccent.withOpacity(0.5),
@@ -196,7 +177,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
           style: TextStyle(
             color: Colors.amber,
             fontFamily: 'Normal',
-            fontSize: isLandscape ? 40.0 : 56.0,
+            fontSize: size2,
             fontWeight: FontWeight.bold,
             letterSpacing: 2,
             shadows: [
@@ -212,28 +193,135 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildAnimatedCharacter(bool isLandscape) {
-    double size = isLandscape ? 80 : 120;
-    return AnimatedBuilder(
-      animation: _animController,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _animController.value * 10), // Flotar suavemente
-          child: Container(
-            height: size,
-            width: size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.deepPurple.withOpacity(0.3),
-                  blurRadius: 30,
-                  spreadRadius: 5,
+  // OPTIMIZADO: Personaje responsive
+  Widget _buildAnimatedCharacterResponsive(double size) {
+    return ValueListenableBuilder<int>(
+      valueListenable: _currentPositionNotifier,
+      builder: (context, currentPosition, child) {
+        return AnimatedBuilder(
+          animation: _animController,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _animController.value * 8),
+              child: Container(
+                height: size,
+                width: size,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.deepPurple.withOpacity(0.3),
+                      blurRadius: 25,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+                child: CustomSpriteAnimationWidget(
+                  animation: sprites[currentPosition],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // OPTIMIZADO: Botones secundarios responsive
+  Widget _buildSecondaryButtonsRow(bool isSmallScreen) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        _buildSecondaryButtonCompact(
+          label: 'Tienda',
+          icon: Icons.shopping_cart,
+          color: Colors.amber[800]!,
+          isSmall: isSmallScreen,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ShopScreen()),
+            );
+          },
+        ),
+        _buildSecondaryButtonCompact(
+          label: 'Cloud',
+          icon: Icons.cloud,
+          color: Colors.blue[700]!,
+          isSmall: isSmallScreen,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          },
+        ),
+        _buildSecondaryButtonCompact(
+          label: '+100 💰',
+          icon: Icons.video_library,
+          color: Colors.green[700]!,
+          isSmall: isSmallScreen,
+          onPressed: _showRewardAd,
+        ),
+      ],
+    );
+  }
+
+  // OPTIMIZADO: Botón principal responsive
+  Widget _buildMainButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = MediaQuery.of(context).size.height < 600;
+        final width = isSmallScreen ? 200.0 : 220.0;
+        final height = isSmallScreen ? 52.0 : 58.0;
+        final iconSize = isSmallScreen ? 24.0 : 28.0;
+        final fontSize = isSmallScreen ? 19.0 : 22.0;
+        
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.4),
+                blurRadius: 15,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              elevation: 0,
+            ),
+            onPressed: onPressed,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: iconSize),
+                SizedBox(width: 10),
+                Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'Normal',
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
                 ),
               ],
-            ),
-            child: CustomSpriteAnimationWidget(
-              animation: sprites[currentPosition],
             ),
           ),
         );
@@ -241,70 +329,28 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     );
   }
 
-  Widget _buildMainButton({
+  // OPTIMIZADO: Botón secundario compacto y responsive
+  Widget _buildSecondaryButtonCompact({
     required String label,
     required IconData icon,
     required Color color,
+    required bool isSmall,
     required VoidCallback onPressed,
   }) {
+    final height = isSmall ? 38.0 : 42.0;
+    final iconSize = isSmall ? 16.0 : 18.0;
+    final fontSize = isSmall ? 13.0 : 15.0;
+    final horizontalPadding = isSmall ? 14.0 : 18.0;
+    
     return Container(
-      width: 220,
-      height: 60,
+      height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.4),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 0,
-        ),
-        onPressed: onPressed,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 28),
-            SizedBox(width: 10),
-            Text(
-              label.toUpperCase(),
-              style: TextStyle(
-                fontFamily: 'Normal',
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondaryButton({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      height: 45,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: color.withOpacity(0.3),
-            blurRadius: 8,
-            offset: Offset(0, 3),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -312,22 +358,23 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),
         onPressed: onPressed,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18),
-            SizedBox(width: 8),
+            Icon(icon, size: iconSize),
+            SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontFamily: 'Normal',
-                fontSize: 16.0,
+                fontSize: fontSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -389,22 +436,12 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
   }
 
   void startTimer() {
+    // OPTIMIZADO: Actualizar solo el ValueNotifier en lugar de setState
     _timer = async.Timer.periodic(Duration(seconds: 2), (timer) {
-      setState(() {
-        currentPosition++;
-        if (currentPosition > sprites.length - 1) {
-          currentPosition = 0;
-        }
-      });
+      _currentPositionNotifier.value++;
+      if (_currentPositionNotifier.value > sprites.length - 1) {
+        _currentPositionNotifier.value = 0;
+      }
     });
-  }
-
-  void _launchURL(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      throw 'Could not launch $url';
-    }
   }
 }

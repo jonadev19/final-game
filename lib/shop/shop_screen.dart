@@ -20,16 +20,27 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // OPTIMIZADO: Animación de monedas limitada a pocos ciclos
     _coinAnimationController = AnimationController(
       duration: Duration(seconds: 2),
       vsync: this,
-    )..repeat();
+    );
+    
+    // Repetir solo 2 veces (4 segundos total) y luego detener
+    _coinAnimationController.repeat(reverse: true);
+    Future.delayed(Duration(seconds: 4), () {
+      if (mounted && _coinAnimationController.isAnimating) {
+        _coinAnimationController.stop();
+      }
+    });
+    
     _loadInventory();
   }
   
   @override
   void dispose() {
     _tabController.dispose();
+    _coinAnimationController.stop();
     _coinAnimationController.dispose();
     super.dispose();
   }

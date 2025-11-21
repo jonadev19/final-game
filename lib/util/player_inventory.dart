@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,11 @@ class PlayerInventory {
   static const String _itemsKey = 'player_items';
   static const String _upgradesKey = 'player_upgrades';
   static const String _levelKey = 'player_max_level';
+
+  // OPTIMIZADO: Debouncing para escrituras en nube
+  static const Duration _cloudSaveDebounceTime = Duration(seconds: 3);
+  Timer? _cloudSaveTimer;
+  bool _hasUnsavedChanges = false;
 
   // Singleton
   static final PlayerInventory _instance = PlayerInventory._internal();
@@ -87,8 +93,8 @@ class PlayerInventory {
     }
   }
 
-  // Guardar datos (Local + Nube)
-  Future<void> saveInventory({bool onlyLocal = false}) async {
+  // OPTIMIZADO: Guardar datos con debouncing para la nube
+  Future<void> saveInventory({bool onlyLocal = false, bool immediate = false}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_coinsKey, _coins);
     await prefs.setInt(_levelKey, _maxLevelReached);
@@ -100,7 +106,26 @@ class PlayerInventory {
 
     if (onlyLocal) return;
 
-    // Guardar en nube si hay usuario
+    // OPTIMIZADO: Usar debouncing para la nube
+    if (immediate) {
+      // Guardar inmediatamente (para momentos críticos)
+      _cloudSaveTimer?.cancel();
+      await _saveToCloud();
+    } else {
+      // Debouncing: esperar 3 segundos antes de guardar
+      _hasUnsavedChanges = true;
+      _cloudSaveTimer?.cancel();
+      _cloudSaveTimer = Timer(_cloudSaveDebounceTime, () async {
+        if (_hasUnsavedChanges) {
+          await _saveToCloud();
+          _hasUnsavedChanges = false;
+        }
+      });
+    }
+  }
+
+  // Método privado para guardar en la nube
+  Future<void> _saveToCloud() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
@@ -116,6 +141,12 @@ class PlayerInventory {
         GameLogger.error('Error guardando en nube: $e');
       }
     }
+  }
+
+  // NUEVO: Forzar guardado inmediato antes de cerrar la app
+  Future<void> forceSave() async {
+    _cloudSaveTimer?.cancel();
+    await saveInventory(immediate: true);
   }
 
   // Agregar monedas
@@ -163,7 +194,7 @@ class PlayerInventory {
   Future<void> addPermanentUpgrade(String upgradeId) async {
     if (!_permanentUpgrades.contains(upgradeId)) {
       _permanentUpgrades.add(upgradeId);
-      await saveInventory();
+      await saveInventory(immediate: true); // OPTIMIZADO: Compras son críticas
     }
   }
 
@@ -178,14 +209,19 @@ class PlayerInventory {
     _maxLevelReached = 1;
     _consumableItems.clear();
     _permanentUpgrades.clear();
-    await saveInventory();
+    await saveInventory(immediate: true); // OPTIMIZADO: Reset es momento crítico
   }
 
   // Desbloquear siguiente nivel
   Future<void> unlockNextLevel(int currentLevel) async {
     if (currentLevel >= _maxLevelReached) {
       _maxLevelReached = currentLevel + 1;
-      await saveInventory();
+      await saveInventory(immediate: true); // OPTIMIZADO: Nivel completado es crítico
     }
+  }
+
+  // NUEVO: Limpiar recursos al cerrar
+  void dispose() {
+    _cloudSaveTimer?.cancel();
   }
 }

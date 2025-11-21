@@ -12,8 +12,6 @@ import 'package:darkness_dungeon/util/localization/strings_location.dart';
 import 'package:darkness_dungeon/util/npc_sprite_sheet.dart';
 import 'package:darkness_dungeon/util/player_sprite_sheet.dart';
 import 'package:darkness_dungeon/util/sounds.dart';
-import 'package:darkness_dungeon/screens/levels/level2.dart';
-import 'package:darkness_dungeon/util/dialogs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -100,9 +98,21 @@ class Boss extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
         loop: false,
       ),
     );
-    childrenEnemy.forEach((e) {
-      if (!e.isDead) e.onDie();
-    });
+    
+    // OPTIMIZADO: Escalonar muertes de hijos para evitar pico de lag
+    // En lugar de matar todos simultáneamente, usar delays
+    for (int i = 0; i < childrenEnemy.length; i++) {
+      final enemy = childrenEnemy[i];
+      if (!enemy.isDead) {
+        // Escalonar muertes con 200ms de diferencia
+        Future.delayed(Duration(milliseconds: i * 200), () {
+          if (enemy.isMounted && !enemy.isDead) {
+            enemy.onDie();
+          }
+        });
+      }
+    }
+    
     removeFromParent();
 
     // La lógica de victoria es manejada por el NPC Kid
