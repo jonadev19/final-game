@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:bonfire/bonfire.dart';
 import 'package:darkness_dungeon/constants/game_constants.dart';
 import 'package:darkness_dungeon/decoration/door.dart';
@@ -56,16 +57,58 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
   // Configuración del joystick (puede ser sobrescrito por subclases)
   bool get useJoystick => true;
 
+  Vector2? _customPlayerPosition;
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
     GameLogger.game('Iniciando nivel ${widget.levelNumber}...');
+    _loadMapAndFindPlayer();
 
     // Solo cargar banner si este nivel lo requiere
     if (widget.showBanner) {
       GameLogger.ads('Cargando banner ad para nivel ${widget.levelNumber}...');
       _adService.loadBannerAd();
       Future.delayed(const Duration(seconds: 1), _checkBannerStatus);
+    }
+  }
+
+  Future<void> _loadMapAndFindPlayer() async {
+    try {
+      final manifestContent = await DefaultAssetBundle.of(context)
+          .loadString('assets/images/${widget.mapPath}');
+
+      final mapData = jsonDecode(manifestContent);
+
+      // Buscar en todas las capas de objetos
+      if (mapData['layers'] != null) {
+        for (var layer in mapData['layers']) {
+          if (layer['type'] == 'objectgroup' && layer['objects'] != null) {
+            for (var object in layer['objects']) {
+              if (object['name'] == 'player') {
+                double x = (object['x'] as num).toDouble();
+                double y = (object['y'] as num).toDouble();
+
+                setState(() {
+                  _customPlayerPosition = Vector2(x, y);
+                });
+                GameLogger.game(
+                    'Found player in map at $_customPlayerPosition');
+                return;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      GameLogger.error('Error parsing map for player position', e);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -149,6 +192,12 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
 
   /// Construye el widget del juego Bonfire
   Widget _buildGame(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return BonfireWidget(
       onReady: (game) {
         gameRef = game;
@@ -157,7 +206,8 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
         _buildPlayerController(),
       ],
       player: Knight(
-        Vector2(2 * GameConstants.tileSize, 3 * GameConstants.tileSize),
+        _customPlayerPosition ??
+            Vector2(2 * GameConstants.tileSize, 3 * GameConstants.tileSize),
       ),
       map: WorldMapByTiled(
         WorldMapReader.fromAsset(widget.mapPath),
@@ -241,6 +291,7 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
       _buildObjectsBuilder() {
     return {
       'door': (p) => Door(p.position, p.size),
+      'doorL3': (p) => Door(p.position, p.size),
       'torch': (p) => Torch(p.position),
       'potion': (p) => PotionLife(p.position, 30),
       'wizard': (p) => WizardNPC(p.position),
@@ -248,8 +299,11 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
       'key': (p) => DoorKey(p.position),
       'kid': (p) => Kid(p.position),
       'boss': (p) => Boss(p.position),
+      'bossL3': (p) => Boss(p.position),
       'goblin': (p) => Goblin(p.position),
+      'mediumL3': (p) => Goblin(p.position),
       'imp': (p) => Imp(p.position),
+      'miniL3': (p) => Imp(p.position),
       'mini_boss': (p) => MiniBoss(p.position),
       'torch_empty': (p) => Torch(p.position, empty: true),
     };
