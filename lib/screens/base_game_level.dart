@@ -10,6 +10,9 @@ import 'package:darkness_dungeon/enemies/boss.dart';
 import 'package:darkness_dungeon/enemies/goblin.dart';
 import 'package:darkness_dungeon/enemies/imp.dart';
 import 'package:darkness_dungeon/enemies/mini_boss.dart';
+import 'package:darkness_dungeon/enemies/medium_l2.dart';
+import 'package:darkness_dungeon/enemies/mini_l2.dart';
+import 'package:darkness_dungeon/enemies/boss_l2.dart';
 import 'package:darkness_dungeon/interface/knight_interface.dart';
 import 'package:darkness_dungeon/npc/kid.dart';
 import 'package:darkness_dungeon/npc/wizard_npc.dart';
@@ -304,6 +307,9 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
       'mediumL3': (p) => Goblin(p.position),
       'imp': (p) => Imp(p.position),
       'miniL3': (p) => Imp(p.position),
+      'miniL2': (p) => MiniL2(p.position),
+      'mediumL2': (p) => MediumL2(p.position),
+      'bossL2': (p) => BossL2(p.position),
       'mini_boss': (p) => MiniBoss(p.position),
       'torch_empty': (p) => Torch(p.position, empty: true),
     };

@@ -58,6 +58,9 @@ flutter:
     - assets/images/enemy/imp/
     - assets/images/enemy/mini_boss/
     - assets/images/enemy/boss/
+    - assets/images/enemy/miniL2/
+    - assets/images/enemy/mediumL2/
+    - assets/images/enemy/bossL2/
     - assets/images/player/
     - assets/images/items/
     - assets/images/tiled/
