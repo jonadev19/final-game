@@ -21,7 +21,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
   bool containKey = false;
   bool showObserveEnemy = false;
   final PlayerInventory inventory = PlayerInventory();
-  
+
   // Sistema de invencibilidad
   bool isInvincible = false;
   async.Timer? _invincibilityTimer;
@@ -33,7 +33,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
   Knight(Vector2 position)
       : super(
           animation: PlayerSpriteSheet.playerAnimations(),
-          size: Vector2.all(GameConstants.tileSize),
+          size: Vector2.all(GameConstants.tileSize * 1.7),
           position: position,
           life: 200,
           speed: GameConstants.tileSize * 2.5,
@@ -53,31 +53,36 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
 
   @override
   Future<void> onLoad() {
+    double hitboxWidth = valueByTileSize(8);
+    double hitboxHeight = valueByTileSize(4);
+
     add(
       RectangleHitbox(
-        size: Vector2(valueByTileSize(8), valueByTileSize(8)),
+        size: Vector2(hitboxWidth, hitboxHeight),
         position: Vector2(
-          valueByTileSize(4),
-          valueByTileSize(8),
+          (size.x - hitboxWidth) / 2,
+          size.y -
+              hitboxHeight -
+              valueByTileSize(7), // Ajuste mayor por el escalado del personaje
         ),
       ),
     );
     return super.onLoad();
   }
-  
+
   // Cargar inventario y aplicar mejoras permanentes
   Future<void> _loadInventoryAndApplyUpgrades() async {
     await inventory.loadInventory();
     _applyPermanentUpgrades();
   }
-  
+
   // Aplicar todas las mejoras permanentes compradas
   void _applyPermanentUpgrades() {
     // Resetear a valores base
     attack = baseAttack;
     maxStamina = baseStamina;
     speed = baseSpeed;
-    
+
     // Aplicar mejoras de arma
     if (inventory.hasPermanentUpgrade('weapon_upgrade_1')) {
       attack += 10;
@@ -85,7 +90,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     if (inventory.hasPermanentUpgrade('weapon_upgrade_2')) {
       attack += 20;
     }
-    
+
     // Aplicar mejoras de stamina
     if (inventory.hasPermanentUpgrade('stamina_upgrade_1')) {
       maxStamina += 50;
@@ -93,12 +98,12 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     if (inventory.hasPermanentUpgrade('stamina_upgrade_2')) {
       maxStamina += 100;
     }
-    
+
     // Aplicar mejoras de velocidad
     if (inventory.hasPermanentUpgrade('speed_upgrade_1')) {
       speed = baseSpeed * 1.3;
     }
-    
+
     // Aplicar mejoras de vida máxima
     double maxLifeBonus = 0;
     if (inventory.hasPermanentUpgrade('health_upgrade_1')) {
@@ -107,13 +112,13 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     if (inventory.hasPermanentUpgrade('health_upgrade_2')) {
       maxLifeBonus += 100;
     }
-    
+
     if (maxLifeBonus > 0) {
       // Aumentar vida máxima y curar proporcionalmente
       addLife(maxLifeBonus);
     }
   }
-  
+
   // Usar poción del inventario
   Future<void> usePotion(String potionId) async {
     if (await inventory.useConsumableItem(potionId)) {
@@ -124,22 +129,24 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
       }
     }
   }
-  
+
   // Usar la mejor poción disponible automáticamente
   Future<void> useBestAvailablePotion() async {
     // Si la vida está completa, no usar poción
     if (life >= maxLife) {
       return;
     }
-    
+
     double missingLife = maxLife - life;
-    
+
     // Intentar usar la poción más apropiada según la vida faltante
     // Prioridad: usar la más pequeña que sea suficiente para no desperdiciar
-    
-    if (missingLife <= 50 && inventory.getConsumableQuantity('potion_small') > 0) {
+
+    if (missingLife <= 50 &&
+        inventory.getConsumableQuantity('potion_small') > 0) {
       await usePotion('potion_small');
-    } else if (missingLife <= 100 && inventory.getConsumableQuantity('potion_medium') > 0) {
+    } else if (missingLife <= 100 &&
+        inventory.getConsumableQuantity('potion_medium') > 0) {
       await usePotion('potion_medium');
     } else if (inventory.getConsumableQuantity('potion_large') > 0) {
       await usePotion('potion_large');
@@ -150,7 +157,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     }
     // Si no tiene pociones, no hace nada
   }
-  
+
   double? _getPotionEffect(String potionId) {
     switch (potionId) {
       case 'potion_small':
@@ -163,7 +170,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
         return null;
     }
   }
-  
+
   void _showHealEffect() {
     gameRef.add(
       AnimatedFollowerGameObject(
@@ -182,7 +189,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
       ),
     );
   }
-  
+
   // Usar llave del inventario
   Future<bool> useKeyFromInventory() async {
     if (await inventory.useConsumableItem('key_single') ||
@@ -192,33 +199,33 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     }
     return false;
   }
-  
+
   // Usar escudo de invencibilidad del inventario
   Future<void> useInvincibilityShield() async {
     // No usar si ya está activo
     if (isInvincible) {
       return;
     }
-    
+
     // Verificar si tiene el ítem en el inventario
     if (await inventory.useConsumableItem('invincibility_30s')) {
       _activateInvincibility(30); // 30 segundos
     }
   }
-  
+
   // Activar invencibilidad por un tiempo determinado
   void _activateInvincibility(int seconds) {
     isInvincible = true;
     _invincibilityDuration = seconds;
     _invincibilityStartTime = DateTime.now();
     invincibilityTimeLeft = seconds.toDouble();
-    
+
     // Cancelar timer anterior si existe
     _invincibilityTimer?.cancel();
-    
+
     // Mostrar efecto visual del escudo
     _showShieldEffect();
-    
+
     // Timer para desactivar la invencibilidad
     _invincibilityTimer = async.Timer(
       Duration(seconds: seconds),
@@ -230,13 +237,13 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
       },
     );
   }
-  
+
   // Mostrar efecto visual del escudo (Optimizado)
   void _showShieldEffect() {
     if (!isMounted || !hasGameRef) return;
-    
+
     _removeShieldEffect(); // Remover efecto anterior si existe
-    
+
     // OPTIMIZADO: Usar PositionComponent para que siga automáticamente al jugador
     // Esto evita actualizar la posición manualmente en cada frame
     _shieldEffect = CircleComponent(
@@ -247,11 +254,11 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3,
     );
-    
+
     if (_shieldEffect != null) {
       // Agregar como hijo del jugador para que se mueva automáticamente
       add(_shieldEffect!);
-      
+
       // Solo un efecto simple de parpadeo (más eficiente)
       _shieldEffect!.add(
         OpacityEffect.fadeOut(
@@ -265,7 +272,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
       // Removido ScaleEffect para mejor rendimiento
     }
   }
-  
+
   // Remover efecto visual del escudo
   void _removeShieldEffect() {
     _shieldEffect?.removeFromParent();
@@ -291,27 +298,27 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     if (event.id == 1 && event.event == ActionEvent.DOWN) {
       actionAttackRange();
     }
-    
+
     // Activar escudo de invencibilidad con tecla X o botón 2
     if (event.id == LogicalKeyboardKey.keyX &&
         event.event == ActionEvent.DOWN) {
       useInvincibilityShield();
     }
-    
+
     if (event.id == 2 && event.event == ActionEvent.DOWN) {
       useInvincibilityShield();
     }
-    
+
     // Usar poción con tecla C o botón 3
     if (event.id == LogicalKeyboardKey.keyC &&
         event.event == ActionEvent.DOWN) {
       useBestAvailablePotion();
     }
-    
+
     if (event.id == 3 && event.event == ActionEvent.DOWN) {
       useBestAvailablePotion();
     }
-    
+
     super.onJoystickAction(event);
   }
 
@@ -323,7 +330,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     isInvincible = false;
     invincibilityTimeLeft = 0;
     _invincibilityStartTime = null;
-    
+
     removeFromParent();
     gameRef.add(
       GameDecoration.withSprite(
@@ -337,7 +344,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     );
     super.onDie();
   }
-  
+
   @override
   void onRemove() {
     // Limpiar timers al remover el componente
@@ -362,9 +369,16 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
 
     Sounds.attackPlayerMelee();
     decrementStamina(15);
+    // Reproducir la animación en el personaje
+    animation?.playOnce(
+      PlayerSpriteSheet.heroAttack(),
+      runToTheEnd: true,
+    );
+
     simpleAttackMelee(
       damage: attack,
-      animationRight: PlayerSpriteSheet.attackEffectRight(),
+      animationRight:
+          PlayerSpriteSheet.attackEffectRight(), // Volver al efecto de corte
       size: Vector2.all(GameConstants.tileSize),
     );
   }
@@ -385,7 +399,8 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     simpleAttackRange(
       animationRight: GameSpriteSheet.fireBallAttackRight(),
       animationDestroy: GameSpriteSheet.fireBallExplosion(),
-      size: Vector2(GameConstants.tileSize * 0.65, GameConstants.tileSize * 0.65),
+      size:
+          Vector2(GameConstants.tileSize * 0.65, GameConstants.tileSize * 0.65),
       damage: 10,
       speed: speed * 2.5,
       onDestroy: () {
@@ -403,16 +418,18 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
   void update(double dt) {
     if (isDead) return;
     _verifyStamina();
-    
+
     // OPTIMIZADO: El escudo ahora es hijo del jugador, se mueve automáticamente
     // Solo calculamos el tiempo restante
-    if (isInvincible && _invincibilityStartTime != null && 
+    if (isInvincible &&
+        _invincibilityStartTime != null &&
         checkInterval('updateInvTime', 500, dt)) {
-      final elapsed = DateTime.now().difference(_invincibilityStartTime!).inSeconds;
+      final elapsed =
+          DateTime.now().difference(_invincibilityStartTime!).inSeconds;
       invincibilityTimeLeft = (_invincibilityDuration - elapsed).toDouble();
       if (invincibilityTimeLeft < 0) invincibilityTimeLeft = 0;
     }
-    
+
     // Optimizado: Verificar enemigos con menos frecuencia y menor radio
     if (checkInterval('checkEnemies', 200, dt)) {
       seeEnemy(
@@ -427,7 +444,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
         },
       );
     }
-    
+
     super.update(dt);
   }
 
@@ -459,7 +476,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
   @override
   void onReceiveDamage(AttackOriginEnum attacker, double damage, dynamic id) {
     if (isDead) return;
-    
+
     // Si está invencible, no recibir daño
     if (isInvincible) {
       // Mostrar mensaje de que está protegido
@@ -473,7 +490,7 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
       );
       return;
     }
-    
+
     showDamage(
       damage,
       config: TextStyle(
