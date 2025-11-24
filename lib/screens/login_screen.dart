@@ -106,11 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 400),
-          padding: const EdgeInsets.all(20),
-          child:
-              _currentUser != null ? _buildLoggedInView() : _buildLoginForm(),
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            padding: const EdgeInsets.all(20),
+            child:
+                _currentUser != null ? _buildLoggedInView() : _buildLoginForm(),
+          ),
         ),
       ),
     );

@@ -158,83 +158,93 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   }
 
   Widget _buildCarousel() {
-    return Stack(
-      children: [
-        // PageView principal
-        PageView.builder(
-          controller: _pageController,
-          itemCount: _levels.length,
-          onPageChanged: (index) {
-            setState(() {
-              _currentPage = index;
-            });
-          },
-          itemBuilder: (context, index) {
-            return AnimatedBuilder(
-              animation: _pageController,
-              builder: (context, child) {
-                double value = 1.0;
-                if (_pageController.position.haveDimensions) {
-                  value = _pageController.page! - index;
-                  value = (1 - (value.abs() * 0.3)).clamp(0.0, 1.0);
-                } else {
-                  // Estado inicial o fallback
-                  value = index == _currentPage ? 1.0 : 0.7;
-                }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: [
+            // PageView principal
+            PageView.builder(
+              controller: _pageController,
+              itemCount: _levels.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return AnimatedBuilder(
+                  animation: _pageController,
+                  builder: (context, child) {
+                    double value = 1.0;
+                    if (_pageController.position.haveDimensions) {
+                      value = _pageController.page! - index;
+                      value = (1 - (value.abs() * 0.3)).clamp(0.0, 1.0);
+                    } else {
+                      // Estado inicial o fallback
+                      value = index == _currentPage ? 1.0 : 0.7;
+                    }
 
-                final curve = Curves.easeOut.transform(value);
+                    final curve = Curves.easeOut.transform(value);
 
-                return Center(
-                  child: SizedBox(
-                    height: curve * 500, // Altura dinámica
-                    width: curve * 350, // Ancho dinámico
-                    child: child,
-                  ),
+                    // Calculate dynamic sizes
+                    // Use 80% of available height for the active card
+                    final double maxHeight = constraints.maxHeight * 0.8;
+                    // Use 70% of available width for the active card, but cap it to maintain aspect ratio if needed
+                    final double maxWidth = constraints.maxWidth * 0.7;
+
+                    return Center(
+                      child: SizedBox(
+                        height: curve * maxHeight, // Altura dinámica
+                        width: curve * maxWidth, // Ancho dinámico
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _buildLevelCard(index),
                 );
               },
-              child: _buildLevelCard(index),
-            );
-          },
-        ),
-
-        // Flecha Izquierda
-        if (_currentPage > 0)
-          Positioned(
-            left: 10,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: _buildArrowButton(
-                icon: Icons.arrow_back_ios_new,
-                onPressed: () {
-                  _pageController.previousPage(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeInOut,
-                  );
-                },
-              ),
             ),
-          ),
 
-        // Flecha Derecha
-        if (_currentPage < _levels.length - 1)
-          Positioned(
-            right: 10,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: _buildArrowButton(
-                icon: Icons.arrow_forward_ios,
-                onPressed: () {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeInOut,
-                  );
-                },
+            // Flecha Izquierda
+            if (_currentPage > 0)
+              Positioned(
+                left: 10,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: _buildArrowButton(
+                    icon: Icons.arrow_back_ios_new,
+                    onPressed: () {
+                      _pageController.previousPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-          ),
-      ],
+
+            // Flecha Derecha
+            if (_currentPage < _levels.length - 1)
+              Positioned(
+                right: 10,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: _buildArrowButton(
+                    icon: Icons.arrow_forward_ios,
+                    onPressed: () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -354,90 +364,97 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
               ),
 
               // Contenido Central
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Círculo del Nivel
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isLocked ? Colors.grey : Colors.white,
-                        width: 3,
-                      ),
-                      boxShadow: [
-                        if (!isLocked)
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.5),
-                            blurRadius: 20,
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Círculo del Nivel
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isLocked ? Colors.grey : Colors.white,
+                            width: 3,
                           ),
-                      ],
-                    ),
-                    child: Center(
-                      child: isLocked
-                          ? const Icon(Icons.lock, size: 40, color: Colors.grey)
-                          : Text(
-                              '$levelNumber',
-                              style: const TextStyle(
-                                fontFamily: 'Normal',
-                                fontSize: 40,
-                                color: Colors.white,
+                          boxShadow: [
+                            if (!isLocked)
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.5),
+                                blurRadius: 20,
                               ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Título y Subtítulo
-                  Text(
-                    levelData['title'],
-                    style: TextStyle(
-                      fontFamily: 'Normal',
-                      fontSize: 28,
-                      color: isLocked ? Colors.grey : Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    levelData['subtitle'],
-                    style: TextStyle(
-                      fontFamily: 'Normal',
-                      fontSize: 16,
-                      color: isLocked ? Colors.grey[600] : Colors.white70,
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // Botón Jugar (Solo si no está bloqueado)
-                  if (!isLocked)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.3),
-                            blurRadius: 10,
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Center(
+                          child: isLocked
+                              ? const Icon(Icons.lock,
+                                  size: 40, color: Colors.grey)
+                              : Text(
+                                  '$levelNumber',
+                                  style: const TextStyle(
+                                    fontFamily: 'Normal',
+                                    fontSize: 40,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
                       ),
-                      child: Text(
-                        'JUGAR',
+                      const SizedBox(height: 20),
+
+                      // Título y Subtítulo
+                      Text(
+                        levelData['title'],
                         style: TextStyle(
                           fontFamily: 'Normal',
-                          color: color, // Color del tema del nivel
-                          fontSize: 20,
+                          fontSize: 28,
+                          color: isLocked ? Colors.grey : Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                ],
+                      const SizedBox(height: 10),
+                      Text(
+                        levelData['subtitle'],
+                        style: TextStyle(
+                          fontFamily: 'Normal',
+                          fontSize: 16,
+                          color: isLocked ? Colors.grey[600] : Colors.white70,
+                        ),
+                      ),
+
+                      const SizedBox(height: 30),
+
+                      // Botón Jugar (Solo si no está bloqueado)
+                      if (!isLocked)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.white.withOpacity(0.3),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'JUGAR',
+                            style: TextStyle(
+                              fontFamily: 'Normal',
+                              color: color, // Color del tema del nivel
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
