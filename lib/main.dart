@@ -38,6 +38,7 @@ void main() async {
     await Flame.device.fullScreen();
   }
 
+  // Prueba
   MyLocalizationsDelegate myLocation = const MyLocalizationsDelegate();
 
   runApp(
