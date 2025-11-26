@@ -130,8 +130,9 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
   void dispose() {
     GameLogger.cleanup('Limpiando nivel ${widget.levelNumber}...');
 
-    // Limpiar banner si se estaba usando
-    if (widget.showBanner) {
+    // Limpiar banner si se estaba usando, PERO NO si estamos reiniciando
+    // (porque el nuevo nivel ya habrá cargado o estará cargando uno nuevo)
+    if (widget.showBanner && !isRestarting) {
       _adService.disposeBannerAd();
     }
 
@@ -325,11 +326,20 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
   Widget _buildUIButtons(BuildContext context) {
     return SafeArea(
       child: Stack(
-        children: const [
+        children: [
           Positioned(
             top: 20,
             right: 20,
-            child: PauseButton(),
+            child: PauseButton(
+              onPause: () {
+                gameRef?.pauseEngine();
+                // Asegurar que el overlay de pausa no bloquee inputs si usamos overlays de Bonfire
+                // Pero aquí usamos un Dialog de Flutter, así que está bien.
+              },
+              onResume: () {
+                gameRef?.resumeEngine();
+              },
+            ),
           ),
           Positioned(
             top: 70,

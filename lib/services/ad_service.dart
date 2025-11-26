@@ -72,6 +72,7 @@ class AdService {
   BannerAd? get bannerAd => _bannerAd;
 
   void loadBannerAd() {
+    disposeBannerAd(); // Limpiar banner anterior si existe
     _bannerAd = BannerAd(
       adUnitId: bannerAdUnitId,
       size: AdSize.banner,

@@ -5,15 +5,25 @@ import 'package:flutter/material.dart';
 ///
 /// Este botón muestra el menú de pausa cuando se presiona.
 class PauseButton extends StatelessWidget {
-  const PauseButton({Key? key}) : super(key: key);
+  final VoidCallback? onPause;
+  final VoidCallback? onResume;
+
+  const PauseButton({
+    Key? key,
+    this.onPause,
+    this.onResume,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        onPause?.call();
         Dialogs.showPauseMenu(
           context,
-          onResume: () {},
+          onResume: () {
+            onResume?.call();
+          },
           onRestart: () {},
           onMainMenu: () {},
         );
@@ -22,10 +32,10 @@ class PauseButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.7),
+          color: Colors.black.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             width: 2,
           ),
         ),

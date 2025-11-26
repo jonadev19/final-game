@@ -49,11 +49,13 @@ class GameController extends GameComponent {
 
         // Esperar más tiempo para que dispose() se complete ANTES de crear el nuevo juego
         Future.delayed(const Duration(milliseconds: 500), () {
-          GameLogger.game('Navegando a nuevo juego...');
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const Level1()),
-            (Route<dynamic> route) => false,
-          );
+          if (context.mounted) {
+            GameLogger.game('Navegando a nuevo juego...');
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const Level1()),
+              (Route<dynamic> route) => false,
+            );
+          }
         });
       },
     );
