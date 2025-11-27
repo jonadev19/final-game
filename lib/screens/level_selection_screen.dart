@@ -1,6 +1,7 @@
 import 'package:darkness_dungeon/menu.dart';
 import 'package:darkness_dungeon/screens/levels/level1.dart';
 import 'package:darkness_dungeon/screens/levels/level2.dart';
+import 'package:darkness_dungeon/screens/levels/level3.dart';
 import 'package:darkness_dungeon/util/player_inventory.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -39,10 +40,10 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     {
       'number': 3,
       'title': 'VOLCÁN',
-      'subtitle': 'Próximamente...',
+      'subtitle': 'Fuego y cenizas',
       'icon': Icons.whatshot,
-      'color': Colors.orange,
-      'screen': null,
+      'color': Colors.deepOrange,
+      'screen': const Level3(),
     },
   ];
 

@@ -13,8 +13,13 @@ import 'package:darkness_dungeon/enemies/mini_boss.dart';
 import 'package:darkness_dungeon/enemies/medium_l2.dart';
 import 'package:darkness_dungeon/enemies/mini_l2.dart';
 import 'package:darkness_dungeon/enemies/boss_l2.dart';
+import 'package:darkness_dungeon/enemies/mini_l3.dart';
+import 'package:darkness_dungeon/enemies/medium_l3.dart';
+import 'package:darkness_dungeon/enemies/boss_l3.dart';
 import 'package:darkness_dungeon/interface/knight_interface.dart';
 import 'package:darkness_dungeon/npc/kid.dart';
+import 'package:darkness_dungeon/npc/kid_l2.dart';
+import 'package:darkness_dungeon/npc/kid_l3.dart';
 import 'package:darkness_dungeon/npc/wizard_npc.dart';
 import 'package:darkness_dungeon/player/knight.dart';
 import 'package:darkness_dungeon/util/sounds.dart';
@@ -79,9 +84,13 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
 
   Future<void> _loadMapAndFindPlayer() async {
     try {
+      GameLogger.info('Intentando cargar mapa: ${widget.mapPath}');
+      GameLogger.info('Ruta completa: assets/images/${widget.mapPath}');
+      
       final manifestContent = await DefaultAssetBundle.of(context)
           .loadString('assets/images/${widget.mapPath}');
 
+      GameLogger.success('Mapa cargado exitosamente: ${widget.mapPath}');
       final mapData = jsonDecode(manifestContent);
 
       // Buscar en todas las capas de objetos
@@ -104,8 +113,10 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
           }
         }
       }
+      GameLogger.warning('No se encontró posición del jugador en el mapa');
     } catch (e) {
       GameLogger.error('Error parsing map for player position', e);
+      GameLogger.error('Mapa que falló: ${widget.mapPath}');
     } finally {
       if (mounted) {
         setState(() {
@@ -302,12 +313,14 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
       'spikes': (p) => Spikes(p.position),
       'key': (p) => DoorKey(p.position),
       'kid': (p) => Kid(p.position),
+      'kidL2': (p) => KidL2(p.position),
+      'kidL3': (p) => KidL3(p.position),
       'boss': (p) => Boss(p.position),
-      'bossL3': (p) => Boss(p.position),
+      'bossL3': (p) => BossL3(p.position),
       'goblin': (p) => Goblin(p.position),
-      'mediumL3': (p) => Goblin(p.position),
+      'mediumL3': (p) => MediumL3(p.position),
       'imp': (p) => Imp(p.position),
-      'miniL3': (p) => Imp(p.position),
+      'miniL3': (p) => MiniL3(p.position),
       'miniL2': (p) => MiniL2(p.position),
       'mediumL2': (p) => MediumL2(p.position),
       'bossL2': (p) => BossL2(p.position),
