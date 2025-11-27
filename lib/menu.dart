@@ -4,6 +4,7 @@ import 'package:bonfire/bonfire.dart';
 import 'package:darkness_dungeon/screens/level_selection_screen.dart';
 import 'package:darkness_dungeon/screens/login_screen.dart';
 import 'package:darkness_dungeon/screens/levels/level2.dart';
+import 'package:darkness_dungeon/screens/levels/level3.dart';
 import 'package:darkness_dungeon/shop/shop_screen.dart';
 import 'package:darkness_dungeon/util/custom_sprite_animation_widget.dart';
 import 'package:darkness_dungeon/util/enemy_sprite_sheet.dart';
@@ -123,23 +124,46 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
 
                     SizedBox(height: isSmallScreen ? 12 : 20),
 
-                    // BOTÓN DEV (Discreto)
-                    TextButton.icon(
-                      icon: Icon(Icons.bug_report, color: Colors.white24, size: 14),
-                      label: Text(
-                        'DEV: Nivel 2',
-                        style: TextStyle(
-                          fontFamily: 'Normal',
-                          color: Colors.white24,
-                          fontSize: 11,
+                    // BOTONES DEV (Discretos)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          icon: Icon(Icons.bug_report, color: Colors.white24, size: 14),
+                          label: Text(
+                            'DEV: Nivel 2',
+                            style: TextStyle(
+                              fontFamily: 'Normal',
+                              color: Colors.white24,
+                              fontSize: 11,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const Level2()),
+                            );
+                          },
                         ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const Level2()),
-                        );
-                      },
+                        SizedBox(width: 8),
+                        TextButton.icon(
+                          icon: Icon(Icons.whatshot, color: Colors.orange.withOpacity(0.4), size: 14),
+                          label: Text(
+                            'DEV: Nivel 3',
+                            style: TextStyle(
+                              fontFamily: 'Normal',
+                              color: Colors.orange.withOpacity(0.4),
+                              fontSize: 11,
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const Level3()),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),

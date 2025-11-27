@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class Level3 extends BaseGameLevel {
   const Level3({Key? key})
       : super(
-          mapPath: 'tiled/level3_fixed.json', // Converted from embedded to external tilesets
+          mapPath: 'tiled/level3.json', // Converted from embedded to external tilesets
           levelNumber: 3,
           showBanner: true, // Nivel 3 muestra banner
           key: key,
