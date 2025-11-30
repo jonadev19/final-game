@@ -617,4 +617,175 @@ class EnemySpriteSheet {
         runLeft: bossL2RunLeft(),
         runRight: bossL2RunRight(),
       );
+
+  // ========== MiniL3 Animations (Level 3 Enemy) ==========
+  
+  // Idle Right
+  static Future<SpriteAnimation> miniL3IdleRight() => SpriteAnimation.load(
+        'enemy/miniL3/miniL3_idle.png',
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.15,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Idle Left (New file)
+  static Future<SpriteAnimation> miniL3IdleLeft() => SpriteAnimation.load(
+        'enemy/miniL3/miniL3_idle_left.png', // Archivo específico para izquierda
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.15,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Run Right
+  static Future<SpriteAnimation> miniL3RunRight() => SpriteAnimation.load(
+        'enemy/miniL3/mniL3_Run.png',
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.1,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Run Left (New file)
+  static Future<SpriteAnimation> miniL3RunLeft() => SpriteAnimation.load(
+        'enemy/miniL3/mniL3_Run_left.png', // Archivo específico para izquierda
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.1,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  static SimpleDirectionAnimation miniL3Animations() => SimpleDirectionAnimation(
+        idleRight: miniL3IdleRight(),
+        idleLeft: miniL3IdleLeft(),
+        idleUp: miniL3IdleRight(),
+        idleDown: miniL3IdleRight(),
+        runRight: miniL3RunRight(),
+        runLeft: miniL3RunLeft(),
+        runUp: miniL3RunRight(),
+        runDown: miniL3RunRight(),
+      );
+
+  // ========== MediumL3 Animations (Level 3 Enemy) ==========
+  
+  // Idle Right
+  static Future<SpriteAnimation> mediumL3IdleRight() => SpriteAnimation.load(
+        'enemy/meduimL3/meduimL3_Idle.png',
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.15,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Idle Left (New file)
+  static Future<SpriteAnimation> mediumL3IdleLeft() => SpriteAnimation.load(
+        'enemy/meduimL3/meduimL3_Idle_left.png', // Archivo específico para izquierda
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.15,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Run Right
+  static Future<SpriteAnimation> mediumL3RunRight() => SpriteAnimation.load(
+        'enemy/meduimL3/meduimL3_Run.png',
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.1,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Run Left (New file)
+  static Future<SpriteAnimation> mediumL3RunLeft() => SpriteAnimation.load(
+        'enemy/meduimL3/meduimL3_Run_left.png', // Archivo específico para izquierda
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.1,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  static SimpleDirectionAnimation mediumL3Animations() => SimpleDirectionAnimation(
+        idleRight: mediumL3IdleRight(),
+        idleLeft: mediumL3IdleLeft(),
+        idleUp: mediumL3IdleRight(),
+        idleDown: mediumL3IdleRight(),
+        runRight: mediumL3RunRight(),
+        runLeft: mediumL3RunLeft(),
+        runUp: mediumL3RunRight(),
+        runDown: mediumL3RunRight(),
+      );
+
+  // ========== BossL3 Animations (Level 3 Boss) ==========
+  
+  // Idle Right
+  static Future<SpriteAnimation> bossL3IdleRight() => SpriteAnimation.load(
+        'enemy/bossL3/bossL3_Idle.png',
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.15,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Idle Left (New file)
+  static Future<SpriteAnimation> bossL3IdleLeft() => SpriteAnimation.load(
+        'enemy/bossL3/bossL3_Idle_left.png', // Archivo específico para izquierda
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.15,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Run Right
+  static Future<SpriteAnimation> bossL3RunRight() => SpriteAnimation.load(
+        'enemy/bossL3/bossL3_Run.png',
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.1,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  // Run Left (New file)
+  static Future<SpriteAnimation> bossL3RunLeft() => SpriteAnimation.load(
+        'enemy/bossL3/bossL3_Run_left.png', // Archivo específico para izquierda
+        SpriteAnimationData.sequenced(
+          amount: 7,
+          stepTime: 0.1,
+          textureSize: Vector2(128, 128),
+          texturePosition: Vector2(0, 0),
+        ),
+      );
+
+  static SimpleDirectionAnimation bossL3Animations() => SimpleDirectionAnimation(
+        idleRight: bossL3IdleRight(),
+        idleLeft: bossL3IdleLeft(),
+        idleUp: bossL3IdleRight(),
+        idleDown: bossL3IdleRight(),
+        runRight: bossL3RunRight(),
+        runLeft: bossL3RunLeft(),
+        runUp: bossL3RunRight(),
+        runDown: bossL3RunRight(),
+      );
 }

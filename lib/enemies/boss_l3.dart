@@ -12,13 +12,11 @@ import 'package:darkness_dungeon/util/localization/strings_location.dart';
 import 'package:darkness_dungeon/util/npc_sprite_sheet.dart';
 import 'package:darkness_dungeon/util/player_sprite_sheet.dart';
 import 'package:darkness_dungeon/util/sounds.dart';
+import 'package:darkness_dungeon/npc/kid_l3.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// BossL3 - Jefe del Nivel 3
-/// 
-/// Este jefe tiene las mismas mecánicas que BossL2,
-/// pero invoca enemigos del Nivel 3 (MiniL3 y MediumL3).
 class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
   final Vector2 initPosition;
   double attack = 40;
@@ -29,13 +27,12 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
   BossL3(this.initPosition)
       : super(
-          animation: EnemySpriteSheet.bossL2Animations(), // Usando sprites de L2 temporalmente
+          animation: EnemySpriteSheet.bossL3Animations(),
           position: initPosition,
-          size: Vector2(64, 64),
+          size: Vector2(96, 96),
           speed: GameConstants.tileSize * 1.5,
           life: 200,
         ) {
-    // Barra de vida sin números
     setupLifeBar(
       size: Vector2(width * 0.5, 3),
       borderRadius: BorderRadius.circular(2),
@@ -48,8 +45,8 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
   Future<void> onLoad() {
     add(
       RectangleHitbox(
-        size: Vector2(valueByTileSize(6), valueByTileSize(7)),
-        position: Vector2(valueByTileSize(5), valueByTileSize(5)),
+        size: Vector2(valueByTileSize(24), valueByTileSize(24)),
+        position: Vector2(valueByTileSize(12), valueByTileSize(12)),
       ),
     );
     return super.onLoad();
@@ -101,10 +98,17 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
   @override
   void onDie() {
+    // Spawnear a KidL3 (la princesa) al morir
+    gameRef.add(
+      KidL3(
+        Vector2(position.x, position.y),
+      ),
+    );
+    
     gameRef.add(
       AnimatedGameObject(
         animation: GameSpriteSheet.explosion(),
-        position: this.position,
+        position: position,
         size: Vector2(32, 32),
         loop: false,
       ),
@@ -150,20 +154,9 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
         default:
       }
 
-      // Invocar enemigos del Nivel 3
       Enemy e = childrenEnemy.length == 2
-          ? MediumL3(
-              Vector2(
-                positionExplosion.x,
-                positionExplosion.y,
-              ),
-            )
-          : MiniL3(
-              Vector2(
-                positionExplosion.x,
-                positionExplosion.y,
-              ),
-            );
+          ? MediumL3(Vector2(positionExplosion.x, positionExplosion.y))
+          : MiniL3(Vector2(positionExplosion.x, positionExplosion.y));
 
       gameRef.add(
         AnimatedGameObject(

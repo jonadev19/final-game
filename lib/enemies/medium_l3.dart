@@ -17,9 +17,9 @@ class MediumL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
   MediumL3(this.initPosition)
       : super(
-          animation: EnemySpriteSheet.mediumL2Animations(), // Usando sprites de L2 temporalmente
+          animation: EnemySpriteSheet.mediumL3Animations(),
           position: initPosition,
-          size: Vector2(64, 64),
+          size: Vector2(64, 64), // Reducido de 128 a 64
           speed: GameConstants.tileSize * 1.5,
           life: 150,
         ) {
@@ -36,8 +36,8 @@ class MediumL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
   Future<void> onLoad() {
     add(
       RectangleHitbox(
-        size: Vector2(valueByTileSize(6), valueByTileSize(7)),
-        position: Vector2(valueByTileSize(5), valueByTileSize(5)), // Centered
+        size: Vector2(valueByTileSize(16), valueByTileSize(16)), // 32px
+        position: Vector2(valueByTileSize(8), valueByTileSize(8)), // Centrado: (64-32)/2 = 16px
       ),
     );
     return super.onLoad();

@@ -1,6 +1,6 @@
 import 'package:bonfire/bonfire.dart';
 import 'package:darkness_dungeon/enemies/boss_l3.dart';
-import 'package:darkness_dungeon/screens/level_selection_screen.dart';
+import 'package:darkness_dungeon/menu.dart';
 import 'package:darkness_dungeon/util/custom_sprite_animation_widget.dart';
 import 'package:darkness_dungeon/util/player_inventory.dart';
 import 'package:darkness_dungeon/util/dialogs.dart';
@@ -20,9 +20,9 @@ class KidL3 extends GameDecoration {
   KidL3(
     Vector2 position,
   ) : super.withAnimation(
-          animation: NpcSpriteSheet.kidIdleLeft(),
+          animation: NpcSpriteSheet.kidL3IdleLeft(), // Usando nuevos sprites full
           position: position,
-          size: Vector2(valueByTileSize(8), valueByTileSize(11)),
+          size: Vector2(valueByTileSize(4), valueByTileSize(4)), // 128x128 aprox para sprite de 138x126
         );
 
   @override
@@ -51,9 +51,13 @@ class KidL3 extends GameDecoration {
       gameRef.context,
       [
         Say(
-          text: [TextSpan(text: getString('talk_kid_2'))],
+          text: [
+            const TextSpan(
+              text: '¡Gracias por salvarme! Has completado la mazmorra y salvado a la princesa hija del rey.',
+            )
+          ],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.kidIdleLeft(),
+            animation: NpcSpriteSheet.kidL3IdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),
@@ -71,13 +75,12 @@ class KidL3 extends GameDecoration {
           Dialogs.showVictoryDialog(
             gameRef.context,
             () async {
-              // Nivel 3 es el último, no hay más niveles que desbloquear
-              // Pero guardamos el progreso de todas formas
+              // Guardamos el progreso
               await PlayerInventory().unlockNextLevel(3);
 
+              // Regresar al Menú Principal
               Navigator.of(gameRef.context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                    builder: (context) => const LevelSelectionScreen()),
+                MaterialPageRoute(builder: (context) => Menu()),
                 (Route<dynamic> route) => false,
               );
             },

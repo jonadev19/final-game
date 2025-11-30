@@ -61,6 +61,11 @@ flutter:
     - assets/images/enemy/miniL2/
     - assets/images/enemy/mediumL2/
     - assets/images/enemy/bossL2/
+    - assets/images/enemy/miniL3/
+    - assets/images/enemy/meduimL3/
+    - assets/images/enemy/bossL3/
+    - assets/images/npc/kidL2/
+    - assets/images/npc/kidL3/
     - assets/images/player/
     - assets/images/items/
     - assets/images/tiled/
