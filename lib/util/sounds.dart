@@ -6,9 +6,10 @@ class Sounds {
   static DateTime _lastAttackRange = DateTime.now();
   static DateTime _lastAttackEnemy = DateTime.now();
   static DateTime _lastInteraction = DateTime.now();
-  
+
   // Intervalo mínimo entre sonidos idénticos (en milisegundos)
-  static const int _minInterval = 80; // Reducido ligeramente para mejor respuesta
+  static const int _minInterval =
+      80; // Reducido ligeramente para mejor respuesta
 
   // Audio Pools para baja latencia
   static late AudioPool poolAttackPlayer;
@@ -19,42 +20,42 @@ class Sounds {
 
   static Future initialize() async {
     FlameAudio.bgm.initialize();
-    
+
     // Inicializar Pools (pre-carga sonidos en memoria para reproducción instantánea)
     // maxPlayers: 1 significa que si se llama de nuevo mientras suena, se corta o ignora según config.
     // Para efectos rápidos, queremos permitir solapamiento controlado.
-    
+
     try {
       poolAttackPlayer = await FlameAudio.createPool(
         'attack_player.wav',
         minPlayers: 2,
         maxPlayers: 4,
       );
-      
+
       poolAttackRange = await FlameAudio.createPool(
         'attack_fire_ball.wav',
         minPlayers: 2,
         maxPlayers: 4,
       );
-      
+
       poolAttackEnemy = await FlameAudio.createPool(
         'attack_enemy.wav',
         minPlayers: 2,
         maxPlayers: 4,
       );
-      
+
       poolExplosion = await FlameAudio.createPool(
         'explosion.wav',
         minPlayers: 2,
         maxPlayers: 5,
       );
-      
+
       poolInteraction = await FlameAudio.createPool(
         'sound_interaction.wav',
         minPlayers: 1,
         maxPlayers: 2,
       );
-      
+
       print('✅ AudioPools inicializados correctamente');
     } catch (e) {
       print('❌ Error al inicializar AudioPools: $e');
@@ -117,13 +118,23 @@ class Sounds {
     }
   }
 
+  static bool _isPlaying = false;
+
   static void stopBackgroundSound() {
-    FlameAudio.bgm.stop();
+    if (_isPlaying) {
+      FlameAudio.bgm.stop();
+      _isPlaying = false;
+    }
   }
 
   static Future<void> playBackgroundSound() async {
-    // Deshabilitado por rendimiento
-    return;
+    if (_isPlaying) return;
+    try {
+      await FlameAudio.bgm.play('sound_bg.mp3', volume: 0.3);
+      _isPlaying = true;
+    } catch (e) {
+      print('Error playing background sound: $e');
+    }
   }
 
   static void playBackgroundBoosSound() {
@@ -147,7 +158,6 @@ class Sounds {
     try {
       print('🔇 Deteniendo todos los sonidos...');
       await FlameAudio.bgm.stop();
-      // No necesitamos limpiar caché si usamos Pools, pero podemos detener bgm
       print('✅ Sonidos detenidos');
     } catch (e) {
       print('⚠️ Error al detener sonidos: $e');

@@ -1,4 +1,3 @@
-import 'package:darkness_dungeon/menu.dart';
 import 'package:darkness_dungeon/screens/levels/level1.dart';
 import 'package:darkness_dungeon/screens/levels/level2.dart';
 import 'package:darkness_dungeon/screens/levels/level3.dart';
@@ -123,10 +122,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Menu()),
-              );
+              Navigator.pop(context);
             },
           ),
           Column(

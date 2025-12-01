@@ -20,7 +20,7 @@ class KidL3 extends GameDecoration {
   KidL3(
     Vector2 position,
   ) : super.withAnimation(
-          animation: NpcSpriteSheet.kidIdleLeft(),
+          animation: NpcSpriteSheet.oldManIdleLeft(),
           position: position,
           size: Vector2(valueByTileSize(8), valueByTileSize(11)),
         );
@@ -53,7 +53,7 @@ class KidL3 extends GameDecoration {
         Say(
           text: [TextSpan(text: getString('talk_kid_2'))],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.kidIdleLeft(),
+            animation: NpcSpriteSheet.oldManIdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),

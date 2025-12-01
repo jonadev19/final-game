@@ -38,6 +38,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    Sounds.playBackgroundSound();
     startTimer();
     _animController = AnimationController(
       vsync: this,
@@ -47,7 +48,6 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    Sounds.stopBackgroundSound();
     _timer.cancel();
     _animController.dispose();
     _currentPositionNotifier.dispose();
@@ -93,7 +93,8 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                       isLandscape ? 36.0 : (isSmallScreen ? 42.0 : 56.0),
                     ),
 
-                    SizedBox(height: isLandscape ? 8 : (isSmallScreen ? 15 : 25)),
+                    SizedBox(
+                        height: isLandscape ? 8 : (isSmallScreen ? 15 : 25)),
 
                     // PERSONAJE ANIMADO (Responsive)
                     if (sprites.isNotEmpty)
@@ -101,7 +102,8 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                         isLandscape ? 60.0 : (isSmallScreen ? 70.0 : 100.0),
                       ),
 
-                    SizedBox(height: isLandscape ? 15 : (isSmallScreen ? 20 : 30)),
+                    SizedBox(
+                        height: isLandscape ? 15 : (isSmallScreen ? 20 : 30)),
 
                     // BOTÓN JUGAR (Principal)
                     _buildMainButton(
@@ -112,7 +114,8 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LevelSelectionScreen()),
+                              builder: (context) =>
+                                  const LevelSelectionScreen()),
                         );
                       },
                     ),
@@ -129,7 +132,8 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
-                          icon: Icon(Icons.bug_report, color: Colors.white24, size: 14),
+                          icon: Icon(Icons.bug_report,
+                              color: Colors.white24, size: 14),
                           label: Text(
                             'DEV: Nivel 2',
                             style: TextStyle(
@@ -141,13 +145,15 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const Level2()),
+                              MaterialPageRoute(
+                                  builder: (context) => const Level2()),
                             );
                           },
                         ),
                         SizedBox(width: 8),
                         TextButton.icon(
-                          icon: Icon(Icons.whatshot, color: Colors.orange.withOpacity(0.4), size: 14),
+                          icon: Icon(Icons.whatshot,
+                              color: Colors.orange.withOpacity(0.4), size: 14),
                           label: Text(
                             'DEV: Nivel 3',
                             style: TextStyle(
@@ -159,7 +165,8 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const Level3()),
+                              MaterialPageRoute(
+                                  builder: (context) => const Level3()),
                             );
                           },
                         ),
@@ -307,7 +314,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
         final height = isSmallScreen ? 52.0 : 58.0;
         final iconSize = isSmallScreen ? 24.0 : 28.0;
         final fontSize = isSmallScreen ? 19.0 : 22.0;
-        
+
         return Container(
           width: width,
           height: height,
@@ -365,7 +372,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     final iconSize = isSmall ? 16.0 : 18.0;
     final fontSize = isSmall ? 13.0 : 15.0;
     final horizontalPadding = isSmall ? 14.0 : 18.0;
-    
+
     return Container(
       height: height,
       decoration: BoxDecoration(
