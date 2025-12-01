@@ -20,7 +20,7 @@ class KidL3 extends GameDecoration {
   KidL3(
     Vector2 position,
   ) : super.withAnimation(
-          animation: NpcSpriteSheet.kidL3IdleLeft(), // Usando nuevos sprites full
+          animation: NpcSpriteSheet.oldManIdleLeft(),
           position: position,
           size: Vector2(valueByTileSize(4), valueByTileSize(4)), // 128x128 aprox para sprite de 138x126
         );
@@ -57,7 +57,7 @@ class KidL3 extends GameDecoration {
             )
           ],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.kidL3IdleLeft(),
+            animation: NpcSpriteSheet.oldManIdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),

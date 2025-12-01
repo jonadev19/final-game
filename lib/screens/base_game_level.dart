@@ -71,6 +71,7 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
   @override
   void initState() {
     super.initState();
+    Sounds.playBackgroundSound();
     GameLogger.game('Iniciando nivel ${widget.levelNumber}...');
     _loadMapAndFindPlayer();
 
@@ -86,7 +87,7 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
     try {
       GameLogger.info('Intentando cargar mapa: ${widget.mapPath}');
       GameLogger.info('Ruta completa: assets/images/${widget.mapPath}');
-      
+
       final manifestContent = await DefaultAssetBundle.of(context)
           .loadString('assets/images/${widget.mapPath}');
 
@@ -95,18 +96,28 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
 
       // Buscar en todas las capas de objetos
       if (mapData['layers'] != null) {
+        // Calcular factor de escala basado en el tamaño de tiles del mapa vs el juego
+        double mapTileWidth = (mapData['tilewidth'] as num?)?.toDouble() ??
+            GameConstants.tileSize;
+        double mapTileHeight = (mapData['tileheight'] as num?)?.toDouble() ??
+            GameConstants.tileSize;
+
+        double scaleX = GameConstants.tileSize / mapTileWidth;
+        double scaleY = GameConstants.tileSize / mapTileHeight;
+
         for (var layer in mapData['layers']) {
           if (layer['type'] == 'objectgroup' && layer['objects'] != null) {
             for (var object in layer['objects']) {
               if (object['name'] == 'player') {
-                double x = (object['x'] as num).toDouble();
-                double y = (object['y'] as num).toDouble();
+                // Aplicar el factor de escala a las coordenadas
+                double x = (object['x'] as num).toDouble() * scaleX;
+                double y = (object['y'] as num).toDouble() * scaleY;
 
                 setState(() {
                   _customPlayerPosition = Vector2(x, y);
                 });
                 GameLogger.game(
-                    'Found player in map at $_customPlayerPosition');
+                    'Found player in map at $_customPlayerPosition (Scaled from map pos: ${(object['x'] as num)}, ${(object['y'] as num)} with scale: $scaleX, $scaleY)');
                 return;
               }
             }
@@ -148,7 +159,7 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
     }
 
     // Limpiar sonidos
-    Sounds.stopBackgroundSound();
+    // Sounds.stopBackgroundSound(); // No detener música al salir del nivel para mantenerla en menús
 
     if (isRestarting) {
       GameLogger.info('Reiniciando nivel...');

@@ -19,24 +19,22 @@ class NpcSpriteSheet {
         ),
       );
 
-  // Kid Level 3 (Full PNG 138x252 - 2 frames verticales de 138x126)
-  static Future<SpriteAnimation> kidL3IdleLeft() => SpriteAnimation.load(
-        'npc/kidL3/kidL3_full.png',
+  static Future<SpriteAnimation> princessIdleLeft() => SpriteAnimation.load(
+        'npc/princess.png',
         SpriteAnimationData.sequenced(
-          amount: 1, // Estático
+          amount: 4,
           stepTime: 0.1,
-          textureSize: Vector2(138, 126), // Mitad de 252
-          texturePosition: Vector2(0, 0), // Arriba (Asumiendo Left)
+          textureSize: Vector2(48, 40),
+          texturePosition: Vector2(0, 40),
         ),
       );
 
-  static Future<SpriteAnimation> kidL3IdleRight() => SpriteAnimation.load(
-        'npc/kidL3/kidL3_full.png',
+  static Future<SpriteAnimation> oldManIdleLeft() => SpriteAnimation.load(
+        'npc/old_man.png',
         SpriteAnimationData.sequenced(
-          amount: 1, // Estático
+          amount: 4,
           stepTime: 0.1,
-          textureSize: Vector2(138, 126),
-          texturePosition: Vector2(0, 126), // Abajo (Asumiendo Right)
+          textureSize: Vector2(16, 22),
         ),
       );
 }
