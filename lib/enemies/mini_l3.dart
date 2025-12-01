@@ -16,9 +16,9 @@ class MiniL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
   MiniL3(this.initPosition)
       : super(
-          animation: EnemySpriteSheet.miniL2Animations(), // Usando sprites de L2 temporalmente
+          animation: EnemySpriteSheet.miniL3Animations(),
           position: initPosition,
-          size: Vector2(64, 64), // Match 64x64 sprite size
+          size: Vector2(48, 48), // Reducido de 128 a 48
           speed: GameConstants.tileSize * 2,
           life: 80,
         ) {
@@ -36,12 +36,12 @@ class MiniL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
     add(
       RectangleHitbox(
         size: Vector2(
-          valueByTileSize(6),
-          valueByTileSize(6),
+          valueByTileSize(12), // 24px
+          valueByTileSize(12), // 24px
         ),
         position: Vector2(
-          valueByTileSize(3),
-          valueByTileSize(5),
+          valueByTileSize(6), // Centrado: (48-24)/2 = 12px -> valueByTileSize(6)
+          valueByTileSize(6),
         ),
       ),
     );
@@ -61,7 +61,7 @@ class MiniL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
   void execAttack() {
     simpleAttackMelee(
-      size: Vector2(64, 64),
+      size: Vector2(128, 128), // Ajustado para sprite 128x128
       damage: attack,
       interval: 800,
       animationRight: EnemySpriteSheet.enemyAttackEffectRight(),

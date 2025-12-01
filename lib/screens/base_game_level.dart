@@ -329,7 +329,7 @@ abstract class BaseGameLevelState<T extends BaseGameLevel> extends State<T> {
       'boss': (p) => Boss(p.position),
       'bossL3': (p) => BossL3(p.position),
       'goblin': (p) => Goblin(p.position),
-      'mediumL3': (p) => MediumL3(p.position),
+      'meduimL3': (p) => MediumL3(p.position), // Nombre en Tiled (con typo)
       'imp': (p) => Imp(p.position),
       'miniL3': (p) => MiniL3(p.position),
       'miniL2': (p) => MiniL2(p.position),
