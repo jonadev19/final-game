@@ -12,17 +12,17 @@ import 'package:darkness_dungeon/util/sounds.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// NPC Kid para el Nivel 3
-/// Detecta cuando el BossL3 muere y muestra la victoria final
+/// NPC KidL3 (Princesa) para el Nivel 3
+/// Aparece cuando el BossL3 muere y muestra la victoria final del juego
 class KidL3 extends GameDecoration {
   bool conversationWithHero = false;
 
   KidL3(
     Vector2 position,
   ) : super.withAnimation(
-          animation: NpcSpriteSheet.oldManIdleLeft(),
+          animation: NpcSpriteSheet.kidL3IdleLeft(),
           position: position,
-          size: Vector2(valueByTileSize(4), valueByTileSize(4)), // 128x128 aprox para sprite de 138x126
+          size: Vector2(valueByTileSize(16), valueByTileSize(22)), // Mismo tamaño que KidL2
         );
 
   @override
@@ -51,40 +51,46 @@ class KidL3 extends GameDecoration {
       gameRef.context,
       [
         Say(
-          text: [
-            const TextSpan(
-              text: '¡Gracias por salvarme! Has completado la mazmorra y salvado a la princesa hija del rey.',
-            )
-          ],
+          text: [TextSpan(text: getString('talk_queen_1'))],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.oldManIdleLeft(),
+            animation: NpcSpriteSheet.kidL3IdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_player_4'))],
+          text: [TextSpan(text: getString('talk_player_L3_queen_1'))],
           person: CustomSpriteAnimationWidget(
             animation: PlayerSpriteSheet.idleRight(),
           ),
           personSayDirection: PersonSayDirection.LEFT,
         ),
+        Say(
+          text: [TextSpan(text: getString('talk_queen_2'))],
+          person: CustomSpriteAnimationWidget(
+            animation: NpcSpriteSheet.kidL3IdleLeft(),
+          ),
+          personSayDirection: PersonSayDirection.RIGHT,
+        ),
+        Say(
+          text: [TextSpan(text: getString('talk_player_L3_queen_2'))],
+          person: CustomSpriteAnimationWidget(
+            animation: PlayerSpriteSheet.idleRight(),
+          ),
+          personSayDirection: PersonSayDirection.LEFT,
+        ),
+        Say(
+          text: [TextSpan(text: getString('talk_queen_3'))],
+          person: CustomSpriteAnimationWidget(
+            animation: NpcSpriteSheet.kidL3IdleLeft(),
+          ),
+          personSayDirection: PersonSayDirection.RIGHT,
+        ),
       ],
       onFinish: () {
         Sounds.interaction();
         gameRef.camera.moveToPlayerAnimated(onComplete: () {
-          Dialogs.showVictoryDialog(
-            gameRef.context,
-            () async {
-              // Guardamos el progreso
-              await PlayerInventory().unlockNextLevel(3);
-
-              // Regresar al Menú Principal
-              Navigator.of(gameRef.context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => Menu()),
-                (Route<dynamic> route) => false,
-              );
-            },
-          );
+          // Usar showCongratulations en vez de showVictoryDialog
+          Dialogs.showCongratulations(gameRef.context);
         });
       },
       onChangeTalk: (index) {

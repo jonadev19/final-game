@@ -37,4 +37,22 @@ class NpcSpriteSheet {
           textureSize: Vector2(16, 22),
         ),
       );
+
+  static Future<SpriteAnimation> kidL2IdleLeft() => SpriteAnimation.load(
+        'npc/kidL2/kidL2_left.png',
+        SpriteAnimationData.sequenced(
+          amount: 4,
+          stepTime: 0.2,
+          textureSize: Vector2(880, 1216),
+        ),
+      );
+
+  static Future<SpriteAnimation> kidL3IdleLeft() => SpriteAnimation.load(
+        'npc/kidL3/kidL3.png', // Cambiado de kidL3_left.png a kidL3.png
+        SpriteAnimationData.sequenced(
+          amount: 4,
+          stepTime: 0.2,
+          textureSize: Vector2(880, 1216),
+        ),
+      );
 }

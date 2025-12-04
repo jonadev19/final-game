@@ -30,9 +30,10 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
           animation: EnemySpriteSheet.bossL3Animations(),
           position: initPosition,
           size: Vector2(96, 96),
-          speed: GameConstants.tileSize * 1.5,
-          life: 200,
+          speed: GameConstants.tileSize * 2.5, // Aumentado de 1.5 a 2.5 (+67%)
+          life: 300, // Aumentado de 200 a 300 (+50%)
         ) {
+    attack = 60; // Aumentado de 40 a 60 (+50%)
     setupLifeBar(
       size: Vector2(width * 0.5, 3),
       borderRadius: BorderRadius.circular(2),
@@ -74,23 +75,20 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
       );
     }
 
-    if (life < 150 && childrenEnemy.length == 0) {
-      addChildInMap(dt);
-    }
-
-    if (life < 100 && childrenEnemy.length == 1) {
-      addChildInMap(dt);
-    }
-
-    if (life < 50 && childrenEnemy.length == 2) {
-      addChildInMap(dt);
-    }
-
+    // Boss L3: Solo ataques, sin spawn de enemigos
     this.seeAndMoveToPlayer(
       closePlayer: (player) {
-        execAttack();
+        execAttack(); // Ataque melee
       },
       radiusVision: GameConstants.tileSize * 4,
+    );
+
+    // Ataque de bolas de fuego rápido y constante
+    this.seeAndMoveToAttackRange(
+      positioned: (p) {
+        execAttackRange(); // Bolas de fuego
+      },
+      radiusVision: GameConstants.tileSize * 6,
     );
 
     super.update(dt);
@@ -129,49 +127,6 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
     super.onDie();
   }
 
-  void addChildInMap(double dt) {
-    if (checkInterval('addChild', 2000, dt)) {
-      Vector2 positionExplosion = Vector2.zero();
-
-      switch (this.directionThePlayerIsIn()) {
-        case Direction.left:
-          positionExplosion = this.position.translated(width * -2, 0);
-          break;
-        case Direction.right:
-          positionExplosion = this.position.translated(width * 2, 0);
-          break;
-        case Direction.up:
-          positionExplosion = this.position.translated(0, height * -2);
-          break;
-        case Direction.down:
-          positionExplosion = this.position.translated(0, height * 2);
-          break;
-        case Direction.upLeft:
-        case Direction.upRight:
-        case Direction.downLeft:
-        case Direction.downRight:
-          break;
-        default:
-      }
-
-      Enemy e = childrenEnemy.length == 2
-          ? MediumL3(Vector2(positionExplosion.x, positionExplosion.y))
-          : MiniL3(Vector2(positionExplosion.x, positionExplosion.y));
-
-      gameRef.add(
-        AnimatedGameObject(
-          animation: GameSpriteSheet.smokeExplosion(),
-          position: positionExplosion,
-          size: Vector2(32, 32),
-          loop: false,
-        ),
-      );
-
-      childrenEnemy.add(e);
-      gameRef.add(e);
-    }
-  }
-
   void execAttack() {
     this.simpleAttackMelee(
       size: Vector2.all(GameConstants.tileSize * 0.62),
@@ -181,6 +136,28 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
       execute: () {
         Sounds.attackEnemyMelee();
       },
+    );
+  }
+
+  // Ataque de bolas de fuego rápido para el boss final
+  void execAttackRange() {
+    this.simpleAttackRange(
+      animation: GameSpriteSheet.fireBallAttackRight(),
+      animationDestroy: GameSpriteSheet.fireBallExplosion(),
+      size: Vector2.all(GameConstants.tileSize * 0.7),
+      damage: attack * 0.8, // 80% del daño melee
+      speed: speed * 3, // Muy rápido
+      interval: 400, // Dispara cada 400ms - MUY RÁPIDO
+      execute: () {
+        Sounds.attackRange();
+      },
+      onDestroy: () {
+        Sounds.explosion();
+      },
+      collision: RectangleHitbox(
+        size: Vector2(GameConstants.tileSize / 3, GameConstants.tileSize / 3),
+        position: Vector2(10, 5),
+      ),
     );
   }
 
@@ -236,37 +213,37 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
       gameRef.context,
       [
         Say(
-          text: [TextSpan(text: getString('talk_kid_1'))],
+          text: [TextSpan(text: getString('talk_queen_boss_1'))],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.kidIdleLeft(),
+            animation: NpcSpriteSheet.kidL3IdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_boss_1'))],
+          text: [TextSpan(text: getString('talk_bossL3_queen_1'))],
           person: CustomSpriteAnimationWidget(
-            animation: EnemySpriteSheet.bossL2IdleRight(),
+            animation: EnemySpriteSheet.bossL3IdleRight(),
           ),
           personSayDirection: PersonSayDirection.LEFT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_player_3'))],
+          text: [TextSpan(text: getString('talk_player_L3_queen_boss'))],
           person: CustomSpriteAnimationWidget(
             animation: PlayerSpriteSheet.idleRight(),
           ),
           personSayDirection: PersonSayDirection.LEFT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_boss_2'))],
+          text: [TextSpan(text: getString('talk_bossL3_queen_2'))],
           person: CustomSpriteAnimationWidget(
-            animation: EnemySpriteSheet.bossL2IdleRight(),
+            animation: EnemySpriteSheet.bossL3IdleRight(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),
       ],
       onFinish: () {
         Sounds.interaction();
-        addInitChild();
+        // BossL3 no spawns enemies - removed addInitChild()
         Future.delayed(Duration(milliseconds: 500), () {
           gameRef.camera.moveToPlayerAnimated(zoom: 1);
         });
@@ -278,23 +255,5 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
         LogicalKeyboardKey.space,
       ],
     );
-  }
-
-  void addInitChild() {
-    addMiniL3(width * -2, 0);
-    addMiniL3(width * -2, width);
-  }
-
-  void addMiniL3(double x, double y) {
-    final p = position.translated(x, y);
-    gameRef.add(
-      AnimatedGameObject(
-        animation: GameSpriteSheet.smokeExplosion(),
-        position: p,
-        size: Vector2.all(GameConstants.tileSize),
-        loop: false,
-      ),
-    );
-    gameRef.add(MiniL3(p));
   }
 }

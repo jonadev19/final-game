@@ -12,53 +12,100 @@ import 'package:darkness_dungeon/util/sounds.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// NPC Kid para el Nivel 2
-/// Detecta cuando el BossL2 muere y desbloquea el Nivel 3
-class KidL2 extends GameDecoration {
-  bool conversationWithHero = false;
+/// NPC KidL2 para el Nivel 2
+/// Interactúa con el jugador antes y después de derrotar al BossL2
+class KidL2 extends GameDecoration with Sensor {
+  bool _hasInteractedBeforeBoss = false;
+  bool _conversationWithHero = false;
 
   KidL2(
     Vector2 position,
   ) : super.withAnimation(
-          animation: NpcSpriteSheet.princessIdleLeft(),
+          animation: NpcSpriteSheet.kidL2IdleLeft(),
           position: position,
-          size: Vector2(valueByTileSize(24), valueByTileSize(20)),
+          size: Vector2(valueByTileSize(16), valueByTileSize(22)), // Tamaño aumentado
         );
 
   @override
   void update(double dt) {
     super.update(dt);
-    if (!conversationWithHero && checkInterval('checkBossDead', 1000, dt)) {
+    
+    // Verificar si el boss ha sido derrotado
+    if (!_conversationWithHero && checkInterval('checkBossDead', 1000, dt)) {
       try {
-        // Buscar si existe el BossL2 en el juego
         gameRef.enemies().firstWhere((e) => e is BossL2);
       } catch (e) {
-        // Si no existe, significa que fue derrotado
-        conversationWithHero = true;
+        // Boss derrotado - iniciar conversación de victoria
+        _conversationWithHero = true;
         gameRef.camera.moveToTargetAnimated(
           target: this,
           onComplete: () {
-            _startConversation();
+            _startVictoryConversation();
           },
         );
       }
     }
   }
 
-  void _startConversation() {
+  @override
+  void onContact(GameComponent component) {
+    // Interacción cuando el jugador se acerca (antes de derrotar al boss)
+    if (component is Player && !_hasInteractedBeforeBoss && !_conversationWithHero) {
+      _hasInteractedBeforeBoss = true;
+      _startInitialConversation();
+    }
+  }
+
+  void _startInitialConversation() {
     Sounds.interaction();
     TalkDialog.show(
       gameRef.context,
       [
         Say(
-          text: [TextSpan(text: getString('talk_kid_2'))],
+          text: [TextSpan(text: getString('talk_kidL2_1'))],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.princessIdleLeft(),
+            animation: NpcSpriteSheet.kidL2IdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_player_4'))],
+          text: [TextSpan(text: getString('talk_player_L2_1'))],
+          person: CustomSpriteAnimationWidget(
+            animation: PlayerSpriteSheet.idleRight(),
+          ),
+          personSayDirection: PersonSayDirection.LEFT,
+        ),
+        Say(
+          text: [TextSpan(text: getString('talk_kidL2_2'))],
+          person: CustomSpriteAnimationWidget(
+            animation: NpcSpriteSheet.kidL2IdleLeft(),
+          ),
+          personSayDirection: PersonSayDirection.RIGHT,
+        ),
+      ],
+      onChangeTalk: (index) {
+        Sounds.interaction();
+      },
+      logicalKeyboardKeysToNext: [
+        LogicalKeyboardKey.space,
+      ],
+    );
+  }
+
+  void _startVictoryConversation() {
+    Sounds.interaction();
+    TalkDialog.show(
+      gameRef.context,
+      [
+        Say(
+          text: [TextSpan(text: getString('talk_kidL2_3'))],
+          person: CustomSpriteAnimationWidget(
+            animation: NpcSpriteSheet.kidL2IdleLeft(),
+          ),
+          personSayDirection: PersonSayDirection.RIGHT,
+        ),
+        Say(
+          text: [TextSpan(text: getString('talk_player_L2_2'))],
           person: CustomSpriteAnimationWidget(
             animation: PlayerSpriteSheet.idleRight(),
           ),

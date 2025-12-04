@@ -238,28 +238,28 @@ class BossL2 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
       gameRef.context,
       [
         Say(
-          text: [TextSpan(text: getString('talk_kid_1'))],
+          text: [TextSpan(text: getString('talk_kidL2_boss_1'))],
           person: CustomSpriteAnimationWidget(
-            animation: NpcSpriteSheet.kidIdleLeft(),
+            animation: NpcSpriteSheet.kidL2IdleLeft(),
           ),
           personSayDirection: PersonSayDirection.RIGHT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_boss_1'))],
+          text: [TextSpan(text: getString('talk_bossL2_1'))],
           person: CustomSpriteAnimationWidget(
             animation: EnemySpriteSheet.bossL2IdleRight(),
           ),
           personSayDirection: PersonSayDirection.LEFT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_player_3'))],
+          text: [TextSpan(text: getString('talk_player_L2_boss'))],
           person: CustomSpriteAnimationWidget(
             animation: PlayerSpriteSheet.idleRight(),
           ),
           personSayDirection: PersonSayDirection.LEFT,
         ),
         Say(
-          text: [TextSpan(text: getString('talk_boss_2'))],
+          text: [TextSpan(text: getString('talk_bossL2_2'))],
           person: CustomSpriteAnimationWidget(
             animation: EnemySpriteSheet.bossL2IdleRight(),
           ),
