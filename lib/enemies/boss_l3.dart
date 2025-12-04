@@ -23,6 +23,7 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
   bool addChild = false;
   bool firstSeePlayer = false;
+  bool conversationFinished = false; // Nueva bandera para controlar ataques
   List<Enemy> childrenEnemy = [];
 
   BossL3(this.initPosition)
@@ -75,33 +76,31 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
       );
     }
 
-    // Boss L3: Solo ataques, sin spawn de enemigos
-    this.seeAndMoveToPlayer(
-      closePlayer: (player) {
-        execAttack(); // Ataque melee
-      },
-      radiusVision: GameConstants.tileSize * 4,
-    );
+    // Solo atacar después de que termine la conversación inicial
+    if (conversationFinished) {
+      // Boss L3: Solo ataques, sin spawn de enemigos
+      this.seeAndMoveToPlayer(
+        closePlayer: (player) {
+          execAttack(); // Ataque melee
+        },
+        radiusVision: GameConstants.tileSize * 4,
+      );
 
-    // Ataque de bolas de fuego rápido y constante
-    this.seeAndMoveToAttackRange(
-      positioned: (p) {
-        execAttackRange(); // Bolas de fuego
-      },
-      radiusVision: GameConstants.tileSize * 6,
-    );
+      // Ataque de bolas de fuego rápido y constante
+      this.seeAndMoveToAttackRange(
+        positioned: (p) {
+          execAttackRange(); // Bolas de fuego
+        },
+        radiusVision: GameConstants.tileSize * 6,
+      );
+    }
 
     super.update(dt);
   }
 
   @override
   void onDie() {
-    // Spawnear a KidL3 (la princesa) al morir
-    gameRef.add(
-      KidL3(
-        Vector2(position.x, position.y),
-      ),
-    );
+    // KidL3 (la reina) ya está en el mapa, no necesita spawnearse
     
     gameRef.add(
       AnimatedGameObject(
@@ -244,6 +243,8 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
       onFinish: () {
         Sounds.interaction();
         // BossL3 no spawns enemies - removed addInitChild()
+        // Habilitar ataques después de la conversación
+        conversationFinished = true;
         Future.delayed(Duration(milliseconds: 500), () {
           gameRef.camera.moveToPlayerAnimated(zoom: 1);
         });
