@@ -78,18 +78,20 @@ class BossL3 extends SimpleEnemy with BlockMovementCollision, UseLifeBar {
 
     // Solo atacar después de que termine la conversación inicial
     if (conversationFinished) {
-      // Boss L3: Solo ataques, sin spawn de enemigos
+      // Boss L3: Persigue al jugador mientras dispara
       this.seeAndMoveToPlayer(
         closePlayer: (player) {
-          execAttack(); // Ataque melee
+          execAttack(); // Ataque melee cuando está cerca
         },
-        radiusVision: GameConstants.tileSize * 4,
+        radiusVision: GameConstants.tileSize * 6, // Radio amplio para perseguir
+        runOnlyVisibleInScreen: false, // Persigue incluso fuera de pantalla
       );
 
-      // Ataque de bolas de fuego rápido y constante
-      this.seeAndMoveToAttackRange(
-        positioned: (p) {
-          execAttackRange(); // Bolas de fuego
+      // Dispara bolas de fuego mientras persigue
+      // Usa seePlayer en vez de seeAndMoveToAttackRange para no detenerse
+      this.seePlayer(
+        observed: (player) {
+          execAttackRange(); // Dispara mientras se mueve
         },
         radiusVision: GameConstants.tileSize * 6,
       );
