@@ -30,6 +30,15 @@
 .pub/
 build/
 
+# Firebase related
+lib/firebase_options.dart
+.firebaserc
+firebase.json
+.firebase/
+firestore.indexes.json
+firestore.rules
+storage.rules
+
 # Android related
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
