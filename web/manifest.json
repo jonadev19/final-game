@@ -1,11 +1,11 @@
 {
-    "name": "darkness_dungeon",
-    "short_name": "darkness_dungeon",
+    "name": "Final Relic",
+    "short_name": "Final Relic",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Final Relic - RPG Game.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
