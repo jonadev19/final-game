@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -16,7 +17,9 @@ import 'firebase_options.dart';
 // La constante tileSize ahora está en constants/game_constants.dart
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // Mantener la splash screen nativa visible mientras se inicializa todo
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   // Inicializar Firebase
   await Firebase.initializeApp(
@@ -44,11 +47,15 @@ void main() async {
   // Prueba
   MyLocalizationsDelegate myLocation = const MyLocalizationsDelegate();
 
+  // Remover splash screen nativa - la app está lista
+  FlutterNativeSplash.remove();
+
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Normal',
+        scaffoldBackgroundColor: const Color(0xFF0d0d1a),
       ),
       home: Menu(),
       // Forzar español en toda la aplicación (Android & iOS)

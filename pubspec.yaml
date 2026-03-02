@@ -25,13 +25,13 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
+  flutter_native_splash: "^2.3.1"
 
 dev_dependencies:
   test: any
   flutter_lints: ^5.0.0
 
   flutter_launcher_icons: "^0.13.1"
-  flutter_native_splash: "^2.3.1"
 
 flutter_icons:
   android: true
@@ -39,11 +39,24 @@ flutter_icons:
   image_path: "assets/icon/final_relic_icon.png"
 
 flutter_native_splash:
-  color: "#0175C2"
+  # Dark premium RPG theme
+  color: "#0d0d1a"
   image: "assets/icon/final_relic_icon.png"
+  fullscreen: true
+  android: true
+  ios: true
+
+  # Android 12+ branded splash
   android_12:
     image: "assets/icon/final_relic_icon.png"
-    color: "#0175C2"
+    color: "#0d0d1a"
+    icon_background_color: "#0d0d1a"
+
+  # iOS dark status bar
+  ios_content_mode: center
+  color_dark: "#0d0d1a"
+  image_dark: "assets/icon/final_relic_icon.png"
+
 
 flutter:
   # The following line ensures that the Material Icons font is
