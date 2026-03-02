@@ -32,7 +32,9 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
 
   Knight(Vector2 position)
       : super(
-          animation: PlayerSpriteSheet.playerAnimations(),
+          animation: PlayerSpriteSheet.playerAnimations(
+            skinId: PlayerInventory().getActiveSkin(),
+          ),
           size: Vector2.all(GameConstants.tileSize * 1.7),
           position: position,
           life: 200,
@@ -111,6 +113,14 @@ class Knight extends SimplePlayer with Lighting, BlockMovementCollision {
     }
     if (inventory.hasPermanentUpgrade('health_upgrade_2')) {
       maxLifeBonus += 100;
+    }
+
+    // ===== REWARD BUFFS POR NIVEL =====
+    if (inventory.hasPermanentUpgrade('level_reward_attack')) {
+      attack += 15;
+    }
+    if (inventory.hasPermanentUpgrade('level_reward_health')) {
+      maxLifeBonus += 50;
     }
 
     if (maxLifeBonus > 0) {

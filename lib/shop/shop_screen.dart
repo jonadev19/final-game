@@ -15,7 +15,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _coinAnimationController;
   bool _isLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -25,7 +25,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       duration: Duration(seconds: 2),
       vsync: this,
     );
-    
+
     // Repetir solo 2 veces (4 segundos total) y luego detener
     _coinAnimationController.repeat(reverse: true);
     Future.delayed(Duration(seconds: 4), () {
@@ -33,10 +33,10 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         _coinAnimationController.stop();
       }
     });
-    
+
     _loadInventory();
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -44,12 +44,12 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
     _coinAnimationController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _loadInventory() async {
     await inventory.loadInventory();
     setState(() {});
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,7 +105,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildCustomAppBar() {
     return Container(
       decoration: BoxDecoration(
@@ -218,7 +218,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildCoinsDisplay() {
     return AnimatedBuilder(
       animation: _coinAnimationController,
@@ -245,7 +245,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
           child: Row(
             children: [
               Transform.rotate(
-                angle: math.sin(_coinAnimationController.value * 2 * math.pi) * 0.1,
+                angle: math.sin(_coinAnimationController.value * 2 * math.pi) *
+                    0.1,
                 child: Icon(
                   Icons.monetization_on,
                   color: Colors.black87,
@@ -274,11 +275,11 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       },
     );
   }
-  
+
   // Tab de compras con dinero real
   Widget _buildRealMoneyTab() {
     final items = ShopData.getRealMoneyItems();
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -295,7 +296,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         physics: BouncingScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.9,
+          childAspectRatio: 0.75,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -306,11 +307,11 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   // Tab de compras con monedas del juego
   Widget _buildCoinsTab() {
     final items = ShopData.getCoinShopItems();
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -327,7 +328,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         physics: BouncingScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.9,
+          childAspectRatio: 0.75,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
@@ -338,13 +339,13 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildShopItemCard(ShopItem item, int index) {
     final bool isMoneyPurchase = item.priceInMoney > 0;
     final bool isPermanentUpgrade = _isPermanentUpgrade(item.type);
-    final bool alreadyOwned = isPermanentUpgrade && 
-        inventory.hasPermanentUpgrade(item.id);
-    
+    final bool alreadyOwned =
+        isPermanentUpgrade && inventory.hasPermanentUpgrade(item.id);
+
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 400 + (index * 100)),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -416,9 +417,9 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                     _buildPremiumBadge()
                   else
                     _buildRarityBadge(item.type),
-                  
+
                   SizedBox(height: 8),
-                  
+
                   // Imagen del item con efecto especial
                   Expanded(
                     flex: 3,
@@ -439,16 +440,23 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                       child: Stack(
                         children: [
                           Center(
-                            child: Image.asset(
-                              'assets/images/${item.imagePath}',
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.image_not_supported,
-                                  color: Colors.white38,
-                                  size: 40,
-                                );
-                              },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Image.asset(
+                                'assets/images/${item.imagePath}',
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality
+                                    .none, // Pixel-perfect upscaling
+                                width: double.infinity,
+                                height: double.infinity,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.white38,
+                                    size: 40,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           if (!alreadyOwned)
@@ -472,9 +480,9 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  
+
                   SizedBox(height: 10),
-                  
+
                   // Nombre del item
                   Text(
                     item.name,
@@ -494,9 +502,9 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  
+
                   SizedBox(height: 6),
-                  
+
                   // Descripción
                   Expanded(
                     flex: 2,
@@ -513,9 +521,9 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  
+
                   SizedBox(height: 10),
-                  
+
                   // Botón de compra mejorado
                   if (!alreadyOwned)
                     _buildPurchaseButton(item, isMoneyPurchase)
@@ -534,7 +542,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle, color: Colors.green, size: 19),
+                            Icon(Icons.check_circle,
+                                color: Colors.green, size: 19),
                             SizedBox(width: 6),
                             Text(
                               'EQUIPADO',
@@ -557,7 +566,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildOwnedBadge() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -592,7 +601,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildPremiumBadge() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -627,13 +636,13 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildRarityBadge(ShopItemType type) {
     String label;
     Color color1;
     Color color2;
-    
-    if (type == ShopItemType.weaponUpgrade || 
+
+    if (type == ShopItemType.weaponUpgrade ||
         type == ShopItemType.healthUpgrade ||
         type == ShopItemType.speedUpgrade ||
         type == ShopItemType.staminaUpgrade) {
@@ -649,7 +658,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       color1 = Color(0xFF607D8B);
       color2 = Color(0xFF455A64);
     }
-    
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
@@ -676,7 +685,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   Widget _buildPurchaseButton(ShopItem item, bool isMoneyPurchase) {
     return Container(
       height: 42,
@@ -689,7 +698,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: (isMoneyPurchase ? Colors.green : Colors.amber).withOpacity(0.5),
+            color: (isMoneyPurchase ? Colors.green : Colors.amber)
+                .withOpacity(0.5),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -736,14 +746,14 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   bool _isPermanentUpgrade(ShopItemType type) {
     return type == ShopItemType.weaponUpgrade ||
-           type == ShopItemType.speedUpgrade ||
-           type == ShopItemType.staminaUpgrade ||
-           type == ShopItemType.healthUpgrade;
+        type == ShopItemType.speedUpgrade ||
+        type == ShopItemType.staminaUpgrade ||
+        type == ShopItemType.healthUpgrade;
   }
-  
+
   Future<void> _handlePurchase(ShopItem item) async {
     if (item.priceInMoney > 0) {
       // Compra con dinero real
@@ -753,7 +763,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       await _handleCoinPurchase(item);
     }
   }
-  
+
   Future<void> _handleRealMoneyPurchase(ShopItem item) async {
     // Mostrar diálogo de confirmación
     final confirm = await showDialog<bool>(
@@ -815,10 +825,14 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                     ),
                     SizedBox(height: 10),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF0070BA), Color(0xFF003087)], // Colores de PayPal
+                          colors: [
+                            Color(0xFF0070BA),
+                            Color(0xFF003087)
+                          ], // Colores de PayPal
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -897,11 +911,11 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         ],
       ),
     );
-    
+
     if (confirm != true) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       // MODO PRUEBA: Simular compra (descomenta esto para pruebas sin PayPal)
       /*
@@ -918,13 +932,13 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       }
       setState(() => _isLoading = false);
       */
-      
+
       // MODO REAL: Usar flujo de PayPal
       setState(() => _isLoading = false);
-      
+
       // Convertir de MXN a USD para PayPal
       final amountInUsd = PayPalService.convertMxnToUsd(item.priceInMoney);
-      
+
       PayPalService.processPayment(
         context: context,
         itemName: item.name,
@@ -934,7 +948,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
           // Procesar la compra exitosa
           await _processSuccessfulPurchase(item);
           await _loadInventory(); // Recargar inventario
-          
+
           _showSuccessDialog(
             '¡Compra exitosa!',
             'Has comprado ${item.name} exitosamente',
@@ -958,7 +972,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       setState(() => _isLoading = false);
     }
   }
-  
+
   Future<void> _handleCoinPurchase(ShopItem item) async {
     // Verificar si tiene suficientes monedas
     if (inventory.coins < item.priceInCoins) {
@@ -968,9 +982,9 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       );
       return;
     }
-    
+
     // Verificar si ya tiene el upgrade permanente
-    if (_isPermanentUpgrade(item.type) && 
+    if (_isPermanentUpgrade(item.type) &&
         inventory.hasPermanentUpgrade(item.id)) {
       _showErrorDialog(
         'Ya comprado',
@@ -978,7 +992,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       );
       return;
     }
-    
+
     // Confirmar compra
     final confirm = await showDialog<bool>(
       context: context,
@@ -1039,7 +1053,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                     ),
                     SizedBox(height: 10),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Colors.amber, Colors.orange],
@@ -1049,7 +1064,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.monetization_on, color: Colors.black87, size: 20),
+                          Icon(Icons.monetization_on,
+                              color: Colors.black87, size: 20),
                           SizedBox(width: 6),
                           Text(
                             '${item.priceInCoins}',
@@ -1065,7 +1081,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                     ),
                     SizedBox(height: 10),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -1081,8 +1098,8 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
                               fontSize: 12,
                             ),
                           ),
-                          Icon(Icons.monetization_on, 
-                               color: Colors.amber, size: 14),
+                          Icon(Icons.monetization_on,
+                              color: Colors.amber, size: 14),
                           SizedBox(width: 4),
                           Text(
                             '${inventory.coins}',
@@ -1149,49 +1166,49 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         ],
       ),
     );
-    
+
     if (confirm != true) return;
-    
+
     // Gastar monedas
     final success = await inventory.spendCoins(item.priceInCoins);
-    
+
     if (success) {
       await _processSuccessfulPurchase(item);
       setState(() {});
-      
+
       _showSuccessDialog(
         '¡Compra exitosa!',
         'Has comprado ${item.name}',
       );
     }
   }
-  
+
   Future<void> _processSuccessfulPurchase(ShopItem item) async {
     switch (item.type) {
       case ShopItemType.coinsPack:
         await inventory.addCoins(item.quantity ?? 0);
         break;
-        
+
       case ShopItemType.potion:
       case ShopItemType.key:
       case ShopItemType.bomb:
       case ShopItemType.invincibility:
         await inventory.addConsumableItem(item.id, 1);
         break;
-        
+
       case ShopItemType.weaponUpgrade:
       case ShopItemType.speedUpgrade:
       case ShopItemType.staminaUpgrade:
       case ShopItemType.healthUpgrade:
         await inventory.addPermanentUpgrade(item.id);
         break;
-        
+
       case ShopItemType.specialPack:
         await _processSpecialPack(item.id);
         break;
     }
   }
-  
+
   Future<void> _processSpecialPack(String packId) async {
     switch (packId) {
       case 'pack_starter':
@@ -1199,13 +1216,13 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         await inventory.addConsumableItem('potion_medium', 3);
         await inventory.addConsumableItem('key_single', 1);
         break;
-        
+
       case 'pack_warrior':
         await inventory.addCoins(500);
         await inventory.addPermanentUpgrade('weapon_upgrade_1');
         await inventory.addConsumableItem('potion_large', 5);
         break;
-        
+
       case 'pack_legendary':
         await inventory.addCoins(1500);
         await inventory.addPermanentUpgrade('weapon_upgrade_2');
@@ -1216,7 +1233,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
         break;
     }
   }
-  
+
   void _showSuccessDialog(String title, String message) {
     showDialog(
       context: context,
@@ -1309,7 +1326,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   void _showErrorDialog(String title, String message) {
     showDialog(
       context: context,
@@ -1402,7 +1419,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   void _showInfoDialog(String title, String message) {
     showDialog(
       context: context,
@@ -1495,8 +1512,7 @@ class _ShopScreenState extends State<ShopScreen> with TickerProviderStateMixin {
       ),
     );
   }
-  
+
   // Funciones de MercadoPago eliminadas - Ya no se necesitan con PayPal
   // PayPal maneja el ciclo completo de pago dentro de la app
 }
-

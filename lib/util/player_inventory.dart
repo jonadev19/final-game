@@ -9,6 +9,9 @@ class PlayerInventory {
   static const String _itemsKey = 'player_items';
   static const String _upgradesKey = 'player_upgrades';
   static const String _levelKey = 'player_max_level';
+  static const String _skinsKey = 'player_skins';
+  static const String _activeSkinKey = 'player_active_skin';
+  static const String _levelRewardsKey = 'player_level_rewards';
 
   // OPTIMIZADO: Debouncing para escrituras en nube
   static const Duration _cloudSaveDebounceTime = Duration(seconds: 3);
@@ -24,11 +27,18 @@ class PlayerInventory {
   int _maxLevelReached = 1;
   Map<String, int> _consumableItems = {}; // itemId -> cantidad
   List<String> _permanentUpgrades = []; // upgrades permanentes compradas
+  List<String> _unlockedSkins = ['default']; // Skins desbloqueadas
+  String _activeSkin = 'default'; // Skin equipada
+  List<int> _claimedLevelRewards =
+      []; // Niveles cuyas recompensas ya se reclamaron
 
   int get coins => _coins;
   int get maxLevelReached => _maxLevelReached;
   Map<String, int> get consumableItems => Map.unmodifiable(_consumableItems);
   List<String> get permanentUpgrades => List.unmodifiable(_permanentUpgrades);
+  List<String> get unlockedSkins => List.unmodifiable(_unlockedSkins);
+  String get activeSkin => _activeSkin;
+  List<int> get claimedLevelRewards => List.unmodifiable(_claimedLevelRewards);
 
   // Cargar datos guardados (Local + Nube)
   Future<void> loadInventory() async {
@@ -47,6 +57,11 @@ class PlayerInventory {
       }
     }
     _permanentUpgrades = prefs.getStringList(_upgradesKey) ?? [];
+    _unlockedSkins = prefs.getStringList(_skinsKey) ?? ['default'];
+    _activeSkin = prefs.getString(_activeSkinKey) ?? 'default';
+    final rewardsStrings = prefs.getStringList(_levelRewardsKey) ?? [];
+    _claimedLevelRewards =
+        rewardsStrings.map((s) => int.tryParse(s) ?? 0).toList();
 
     // 2. Intentar sincronizar con la nube si hay usuario logueado
     final user = FirebaseAuth.instance.currentUser;
@@ -94,7 +109,8 @@ class PlayerInventory {
   }
 
   // OPTIMIZADO: Guardar datos con debouncing para la nube
-  Future<void> saveInventory({bool onlyLocal = false, bool immediate = false}) async {
+  Future<void> saveInventory(
+      {bool onlyLocal = false, bool immediate = false}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_coinsKey, _coins);
     await prefs.setInt(_levelKey, _maxLevelReached);
@@ -103,6 +119,10 @@ class PlayerInventory {
         _consumableItems.entries.map((e) => '${e.key}:${e.value}').toList();
     await prefs.setStringList(_itemsKey, itemsString);
     await prefs.setStringList(_upgradesKey, _permanentUpgrades);
+    await prefs.setStringList(_skinsKey, _unlockedSkins);
+    await prefs.setString(_activeSkinKey, _activeSkin);
+    await prefs.setStringList(_levelRewardsKey,
+        _claimedLevelRewards.map((i) => i.toString()).toList());
 
     if (onlyLocal) return;
 
@@ -134,6 +154,9 @@ class PlayerInventory {
           'maxLevel': _maxLevelReached,
           'items': _consumableItems,
           'upgrades': _permanentUpgrades,
+          'skins': _unlockedSkins,
+          'activeSkin': _activeSkin,
+          'levelRewards': _claimedLevelRewards,
           'lastUpdated': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
         GameLogger.info('Datos guardados en la nube');
@@ -209,16 +232,74 @@ class PlayerInventory {
     _maxLevelReached = 1;
     _consumableItems.clear();
     _permanentUpgrades.clear();
-    await saveInventory(immediate: true); // OPTIMIZADO: Reset es momento crítico
+    _unlockedSkins = ['default'];
+    _activeSkin = 'default';
+    _claimedLevelRewards.clear();
+    await saveInventory(immediate: true);
   }
 
   // Desbloquear siguiente nivel
   Future<void> unlockNextLevel(int currentLevel) async {
     if (currentLevel >= _maxLevelReached) {
       _maxLevelReached = currentLevel + 1;
-      await saveInventory(immediate: true); // OPTIMIZADO: Nivel completado es crítico
+      await saveInventory(immediate: true);
     }
   }
+
+  // ============ SISTEMA DE RECOMPENSAS POR NIVEL ============
+
+  /// Otorgar recompensa al completar un nivel
+  /// Nivel 1: +15 ataque permanente
+  /// Nivel 2: +50 vida máxima permanente
+  /// Nivel 3: Skin "Caballero Original"
+  Future<void> addLevelReward(int level) async {
+    if (_claimedLevelRewards.contains(level)) return; // Ya reclamada
+    _claimedLevelRewards.add(level);
+
+    switch (level) {
+      case 1:
+        await addPermanentUpgrade('level_reward_attack');
+        break;
+      case 2:
+        await addPermanentUpgrade('level_reward_health');
+        break;
+      case 3:
+        await unlockSkin('knight');
+        break;
+    }
+    await saveInventory(immediate: true);
+  }
+
+  /// Verificar si ya reclamó la recompensa de un nivel
+  bool hasClaimedLevelReward(int level) {
+    return _claimedLevelRewards.contains(level);
+  }
+
+  // ============ SISTEMA DE SKINS ============
+
+  /// Desbloquear una skin
+  Future<void> unlockSkin(String skinId) async {
+    if (!_unlockedSkins.contains(skinId)) {
+      _unlockedSkins.add(skinId);
+      await saveInventory(immediate: true);
+    }
+  }
+
+  /// Equipar una skin (debe estar desbloqueada)
+  Future<bool> setActiveSkin(String skinId) async {
+    if (_unlockedSkins.contains(skinId)) {
+      _activeSkin = skinId;
+      await saveInventory(immediate: true);
+      return true;
+    }
+    return false;
+  }
+
+  /// Obtener la skin equipada actualmente
+  String getActiveSkin() => _activeSkin;
+
+  /// Verificar si una skin está desbloqueada
+  bool hasSkin(String skinId) => _unlockedSkins.contains(skinId);
 
   // NUEVO: Limpiar recursos al cerrar
   void dispose() {

@@ -69,6 +69,8 @@ class Kid extends GameDecoration {
             () async {
               // Desbloquear Nivel 2
               await PlayerInventory().unlockNextLevel(1);
+              // Recompensa: +15 ataque permanente
+              await PlayerInventory().addLevelReward(1);
 
               Navigator.of(gameRef.context).pushAndRemoveUntil(
                 MaterialPageRoute(

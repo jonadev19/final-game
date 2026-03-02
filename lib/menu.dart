@@ -12,18 +12,25 @@ import 'package:darkness_dungeon/util/sounds.dart';
 import 'package:darkness_dungeon/util/player_inventory.dart';
 import 'package:darkness_dungeon/services/ad_service.dart';
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:darkness_dungeon/widgets/medieval_button.dart';
+import 'package:darkness_dungeon/screens/skin_selector_screen.dart';
 
 class Menu extends StatefulWidget {
   @override
   _MenuState createState() => _MenuState();
 }
 
-class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
-  // OPTIMIZADO: Usar ValueNotifier para evitar rebuilds completos
+class _MenuState extends State<Menu> with TickerProviderStateMixin {
   final ValueNotifier<int> _currentPositionNotifier = ValueNotifier<int>(0);
   late async.Timer _timer;
   late AnimationController _animController;
+
+  // Partículas: usar AnimationController propio + CustomPainter
+  late AnimationController _particleController;
+  late List<_Particle> _particleData;
 
   List<Future<SpriteAnimation>> sprites = [
     PlayerSpriteSheet.idleRight(),
@@ -42,11 +49,20 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+
+    // Partículas con su propio controller (no hace setState)
+    final rng = Random();
+    _particleData = List.generate(10, (_) => _Particle(rng));
+    _particleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
   }
 
   @override
   void dispose() {
     _timer.cancel();
+    _particleController.dispose();
     _animController.dispose();
     _currentPositionNotifier.dispose();
     super.dispose();
@@ -59,75 +75,93 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     final isSmallScreen = size.height < 600;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              Color(0xFF2D1B4E), // Morado oscuro centro
-              Colors.black, // Negro bordes
-            ],
-            radius: 1.3,
-            center: Alignment.center,
+      body: Stack(
+        children: [
+          // 1. FONDO ATMOSFÉRICO (const — nunca se reconstruye)
+          const _MenuBackground(),
+
+          // 2. PARTÍCULAS (CustomPainter con su propio repaint)
+          Positioned.fill(
+            child: RepaintBoundary(
+              child: CustomPaint(
+                painter: _ParticlePainter(_particleData, _particleController),
+              ),
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: isSmallScreen ? 15 : 20,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    // TÍTULO (Responsive)
-                    _buildTitleResponsive(
-                      isLandscape ? 22.0 : (isSmallScreen ? 26.0 : 32.0),
-                      isLandscape ? 36.0 : (isSmallScreen ? 42.0 : 56.0),
-                    ),
 
-                    SizedBox(
-                        height: isLandscape ? 8 : (isSmallScreen ? 15 : 25)),
+          // 3. VIÑETA (const)
+          const _Vignette(),
 
-                    // PERSONAJE ANIMADO (Responsive)
-                    if (sprites.isNotEmpty)
-                      _buildAnimatedCharacterResponsive(
-                        isLandscape ? 60.0 : (isSmallScreen ? 70.0 : 100.0),
+          // 4. CONTENIDO PRINCIPAL
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: isSmallScreen ? 15 : 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      // TÍTULO (Responsive)
+                      _buildTitleResponsive(
+                        isLandscape ? 26.0 : (isSmallScreen ? 34.0 : 42.0),
+                        isLandscape ? 48.0 : (isSmallScreen ? 54.0 : 72.0),
                       ),
 
-                    SizedBox(
-                        height: isLandscape ? 15 : (isSmallScreen ? 20 : 30)),
+                      SizedBox(
+                          height: isLandscape ? 8 : (isSmallScreen ? 20 : 30)),
 
-                    // BOTÓN JUGAR (Principal)
-                    _buildMainButton(
-                      label: getString('play_cap'),
-                      icon: Icons.play_arrow_rounded,
-                      color: Colors.deepPurple,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const LevelSelectionScreen()),
-                        );
-                      },
-                    ),
+                      // PERSONAJE ANIMADO (Responsive)
+                      if (sprites.isNotEmpty)
+                        _buildAnimatedCharacterResponsive(
+                          isLandscape ? 60.0 : (isSmallScreen ? 80.0 : 120.0),
+                        ),
 
-                    SizedBox(height: isSmallScreen ? 12 : 18),
+                      SizedBox(
+                          height: isLandscape ? 20 : (isSmallScreen ? 25 : 40)),
 
-                    // BOTONES SECUNDARIOS (Responsive)
-                    _buildSecondaryButtonsRow(isSmallScreen),
-                  ],
+                      // BOTÓN JUGAR (Principal)
+                      MedievalButton(
+                        label: getString('play_cap'),
+                        icon: Icons.play_arrow_rounded,
+                        baseColor: const Color(0xFF6A1B9A), // Purple accent
+                        width: isSmallScreen ? 220 : 260,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const LevelSelectionScreen()),
+                          );
+                        },
+                      ),
+
+                      SizedBox(height: isSmallScreen ? 15 : 25),
+
+                      // BOTONES SECUNDARIOS (Responsive)
+                      _buildSecondaryButtonsRow(isSmallScreen),
+
+                      SizedBox(height: isSmallScreen ? 10 : 20),
+
+                      // Copyright / Version footer
+                      Text(
+                        "v1.3.6 - Final Relic Team",
+                        style: TextStyle(
+                            fontFamily: 'Normal',
+                            color: Colors.white.withOpacity(0.3),
+                            fontSize: 10),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -140,35 +174,54 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
         Text(
           "FINAL",
           style: TextStyle(
-            color: Colors.white,
+            color: const Color(0xFFB0BEC5), // Silver/Grey
             fontFamily: 'Normal',
             fontSize: size1,
-            letterSpacing: size1 * 0.25,
+            letterSpacing: size1 * 0.2,
             shadows: [
               Shadow(
-                color: Colors.deepPurpleAccent.withOpacity(0.5),
-                blurRadius: 20,
-                offset: Offset(0, 0),
+                color: Colors.black.withOpacity(0.8),
+                blurRadius: 0,
+                offset: const Offset(2, 2),
               ),
             ],
           ),
         ),
-        Text(
-          "RELIC",
-          style: TextStyle(
-            color: Colors.amber,
-            fontFamily: 'Normal',
-            fontSize: size2,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
-            shadows: [
-              Shadow(
-                color: Colors.orange.withOpacity(0.5),
-                blurRadius: 20,
-                offset: Offset(0, 5),
+        Stack(
+          children: [
+            // Borde del texto (Stroke)
+            Text(
+              "RELIC",
+              style: TextStyle(
+                fontFamily: 'Normal',
+                fontSize: size2,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+                foreground: Paint()
+                  ..style = PaintingStyle.stroke
+                  ..strokeWidth = 6
+                  ..color = const Color(0xFF3E2723), // Dark brown outline
               ),
-            ],
-          ),
+            ),
+            // Relleno del texto (Fill con gradiente simulado por color sólido brillante)
+            Text(
+              "RELIC",
+              style: TextStyle(
+                color: const Color(0xFFFFC107), // Gold
+                fontFamily: 'Normal',
+                fontSize: size2,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+                shadows: [
+                  Shadow(
+                    color: Colors.orange.withOpacity(0.6),
+                    blurRadius: 20,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -184,22 +237,31 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
           builder: (context, child) {
             return Transform.translate(
               offset: Offset(0, _animController.value * 8),
-              child: Container(
-                height: size,
-                width: size,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.deepPurple.withOpacity(0.3),
-                      blurRadius: 25,
-                      spreadRadius: 3,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Glow de fondo (detrás del personaje)
+                  Container(
+                    height: size * 1.2,
+                    width: size * 1.2,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.purpleAccent.withOpacity(0.2),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-                child: CustomSpriteAnimationWidget(
-                  animation: sprites[currentPosition],
-                ),
+                  ),
+                  Container(
+                    height: size,
+                    width: size,
+                    child: CustomSpriteAnimationWidget(
+                      animation: sprites[currentPosition],
+                    ),
+                  ),
+                ],
               ),
             );
           },
@@ -208,18 +270,18 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     );
   }
 
-  // OPTIMIZADO: Botones secundarios responsive
+  // OPTIMIZADO: Botones secundarios responsive usando MedievalButton
   Widget _buildSecondaryButtonsRow(bool isSmallScreen) {
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 12,
       runSpacing: 12,
       children: [
-        _buildSecondaryButtonCompact(
+        MedievalButton(
           label: 'Tienda',
           icon: Icons.shopping_cart,
-          color: Colors.amber[800]!,
-          isSmall: isSmallScreen,
+          baseColor: const Color(0xFFE65100), // Orange dark
+          isSmall: true,
           onPressed: () {
             Navigator.push(
               context,
@@ -227,11 +289,24 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
             );
           },
         ),
-        _buildSecondaryButtonCompact(
+        MedievalButton(
+          label: 'Skins',
+          icon: Icons.checkroom,
+          baseColor: const Color(0xFF6A1B9A), // Purple
+          isSmall: true,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const SkinSelectorScreen()),
+            );
+          },
+        ),
+        MedievalButton(
           label: 'Cloud',
           icon: Icons.cloud,
-          color: Colors.blue[700]!,
-          isSmall: isSmallScreen,
+          baseColor: const Color(0xFF1565C0), // Blue dark
+          isSmall: true,
           onPressed: () {
             Navigator.push(
               context,
@@ -239,129 +314,14 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
             );
           },
         ),
-        _buildSecondaryButtonCompact(
+        MedievalButton(
           label: '+100 💰',
           icon: Icons.video_library,
-          color: Colors.green[700]!,
-          isSmall: isSmallScreen,
+          baseColor: const Color(0xFF2E7D32), // Green dark
+          isSmall: true,
           onPressed: _showRewardAd,
         ),
       ],
-    );
-  }
-
-  // OPTIMIZADO: Botón principal responsive
-  Widget _buildMainButton({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isSmallScreen = MediaQuery.of(context).size.height < 600;
-        final width = isSmallScreen ? 200.0 : 220.0;
-        final height = isSmallScreen ? 52.0 : 58.0;
-        final iconSize = isSmallScreen ? 24.0 : 28.0;
-        final fontSize = isSmallScreen ? 19.0 : 22.0;
-
-        return Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.4),
-                blurRadius: 15,
-                offset: Offset(0, 5),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: color,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              elevation: 0,
-            ),
-            onPressed: onPressed,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: iconSize),
-                SizedBox(width: 10),
-                Text(
-                  label.toUpperCase(),
-                  style: TextStyle(
-                    fontFamily: 'Normal',
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // OPTIMIZADO: Botón secundario compacto y responsive
-  Widget _buildSecondaryButtonCompact({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isSmall,
-    required VoidCallback onPressed,
-  }) {
-    final height = isSmall ? 38.0 : 42.0;
-    final iconSize = isSmall ? 16.0 : 18.0;
-    final fontSize = isSmall ? 13.0 : 15.0;
-    final horizontalPadding = isSmall ? 14.0 : 18.0;
-
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 0,
-        ),
-        onPressed: onPressed,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: iconSize),
-            SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Normal',
-                fontSize: fontSize,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -378,9 +338,9 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
               SnackBar(
                 content: Row(
                   children: [
-                    Icon(Icons.check_circle, color: Colors.white),
-                    SizedBox(width: 10),
-                    Text(
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 10),
+                    const Text(
                       '¡Has ganado 100 monedas! 💰',
                       style: TextStyle(
                         fontFamily: 'Normal',
@@ -396,7 +356,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                duration: Duration(seconds: 3),
+                duration: const Duration(seconds: 3),
               ),
             );
           }
@@ -405,7 +365,7 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
+          content: const Text(
             'Anuncio no disponible, intenta más tarde',
             style: TextStyle(fontFamily: 'Normal'),
           ),
@@ -418,11 +378,105 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
 
   void startTimer() {
     // OPTIMIZADO: Actualizar solo el ValueNotifier en lugar de setState
-    _timer = async.Timer.periodic(Duration(seconds: 2), (timer) {
+    _timer = async.Timer.periodic(const Duration(seconds: 2), (timer) {
       _currentPositionNotifier.value++;
       if (_currentPositionNotifier.value > sprites.length - 1) {
         _currentPositionNotifier.value = 0;
       }
     });
   }
+}
+
+// ============ WIDGETS CONST EXTRAÍDOS (nunca se reconstruyen) ============
+
+class _MenuBackground extends StatelessWidget {
+  const _MenuBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          colors: [
+            Color(0xFF1A1A2E),
+            Color(0xFF0F0F1A),
+          ],
+          radius: 1.0,
+          center: Alignment.center,
+        ),
+      ),
+    );
+  }
+}
+
+class _Vignette extends StatelessWidget {
+  const _Vignette();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            colors: [
+              Colors.transparent,
+              Color(0x99000000), // 0.6 opacity black
+            ],
+            stops: [0.6, 1.0],
+            radius: 1.2,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============ SISTEMA DE PARTÍCULAS OPTIMIZADO ============
+
+class _Particle {
+  double x;
+  double y;
+  final double size;
+  final double speed;
+
+  _Particle(Random rng)
+      : x = rng.nextDouble(),
+        y = rng.nextDouble(),
+        size = 2.0 + rng.nextInt(3).toDouble(),
+        speed = 0.002 + rng.nextDouble() * 0.003;
+
+  void update() {
+    y -= speed * 0.1;
+    if (y < 0) {
+      y = 1.0;
+      // Use a simple deterministic drift instead of Random per frame
+      x = (x + 0.37) % 1.0;
+    }
+  }
+}
+
+class _ParticlePainter extends CustomPainter {
+  final List<_Particle> particles;
+  static final Paint _paint = Paint()
+    ..color = const Color(0x59FFC107); // amber 35%
+
+  _ParticlePainter(this.particles, Listenable controller)
+      : super(repaint: controller);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in particles) {
+      p.update();
+      canvas.drawCircle(
+        Offset(p.x * size.width, p.y * size.height),
+        p.size / 2,
+        _paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ParticlePainter oldDelegate) => true;
 }

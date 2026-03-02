@@ -22,7 +22,8 @@ class KidL3 extends GameDecoration {
   ) : super.withAnimation(
           animation: NpcSpriteSheet.kidL3IdleLeft(),
           position: position,
-          size: Vector2(valueByTileSize(16), valueByTileSize(22)), // Mismo tamaño que KidL2
+          size: Vector2(valueByTileSize(16),
+              valueByTileSize(22)), // Mismo tamaño que KidL2
         );
 
   @override
@@ -88,7 +89,9 @@ class KidL3 extends GameDecoration {
       ],
       onFinish: () {
         Sounds.interaction();
-        gameRef.camera.moveToPlayerAnimated(onComplete: () {
+        gameRef.camera.moveToPlayerAnimated(onComplete: () async {
+          // Recompensa: Skin "Caballero Original"
+          await PlayerInventory().addLevelReward(3);
           // Usar showCongratulations en vez de showVictoryDialog
           Dialogs.showCongratulations(gameRef.context);
         });

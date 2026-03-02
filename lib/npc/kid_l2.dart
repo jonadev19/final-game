@@ -23,13 +23,14 @@ class KidL2 extends GameDecoration with Sensor {
   ) : super.withAnimation(
           animation: NpcSpriteSheet.kidL2IdleLeft(),
           position: position,
-          size: Vector2(valueByTileSize(16), valueByTileSize(22)), // Tamaño aumentado
+          size: Vector2(
+              valueByTileSize(16), valueByTileSize(22)), // Tamaño aumentado
         );
 
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     // Verificar si el boss ha sido derrotado
     if (!_conversationWithHero && checkInterval('checkBossDead', 1000, dt)) {
       try {
@@ -50,7 +51,9 @@ class KidL2 extends GameDecoration with Sensor {
   @override
   void onContact(GameComponent component) {
     // Interacción cuando el jugador se acerca (antes de derrotar al boss)
-    if (component is Player && !_hasInteractedBeforeBoss && !_conversationWithHero) {
+    if (component is Player &&
+        !_hasInteractedBeforeBoss &&
+        !_conversationWithHero) {
       _hasInteractedBeforeBoss = true;
       _startInitialConversation();
     }
@@ -120,6 +123,8 @@ class KidL2 extends GameDecoration with Sensor {
             () async {
               // Desbloquear Nivel 3
               await PlayerInventory().unlockNextLevel(2);
+              // Recompensa: +50 vida máxima permanente
+              await PlayerInventory().addLevelReward(2);
 
               Navigator.of(gameRef.context).pushAndRemoveUntil(
                 MaterialPageRoute(
